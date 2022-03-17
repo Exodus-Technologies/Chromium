@@ -1,0 +1,20 @@
+{
+  "name": "chromium",
+  "version": "1.0.0",
+  "description": "Microservice for all interactions for creating, retrieving, updating, and deleting pdf issues for customers of Sheen magazine (Issue Manager)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Exodus-Technologies/Chromium.git"
+  },
+  "keywords": [],
+  "author": "Exodus Technologies, LLC",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Exodus-Technologies/Chromium/issues"
+  },
+  "homepage": "https://github.com/Exodus-Technologies/Chromium#readme"
+}
