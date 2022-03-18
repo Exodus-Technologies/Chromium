@@ -9,7 +9,7 @@ import cors from 'cors';
 import responseTime from 'response-time';
 
 import { requestResponse, errorHandler } from './utils';
-import { appRouter } from './routes';
+import { appRouter, issueRouter } from './routes';
 
 // Create the Express application object
 const server = express();
@@ -54,5 +54,9 @@ console.log('Loaded request/response middleware.');
 //App middleware
 server.use(appRouter);
 console.log('Loaded server routes middleware.');
+
+//Issue middleware
+server.use(issueRouter);
+console.log('Loaded issue routes middleware.');
 
 export default http.createServer(server);

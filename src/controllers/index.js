@@ -1,3 +1,5 @@
 'use strict';
 
-export {};
+import IssueController from './IssueController';
+
+export { IssueController };

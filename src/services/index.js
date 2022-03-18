@@ -1,3 +1,5 @@
 'use strict';
 
-export {};
+import IssueService from './IssueService';
+
+export { IssueService };
