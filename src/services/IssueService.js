@@ -9,9 +9,10 @@ import {
   deleteIssueByKey
 } from '../aws';
 import {
-  saveIssueRefToDB,
+  createIssue,
   updateIssueViews,
   getIssueById,
+  deleteIssueById,
   getIssueByTitle,
   updateIssue,
   getIssues
@@ -25,7 +26,7 @@ function isEmpty(obj) {
 }
 
 function doesValueHaveSpaces(str) {
-  return !/\s/.test(str);
+  return /\s/.test(str);
 }
 
 exports.getPayloadFromRequest = async req => {
@@ -34,22 +35,62 @@ exports.getPayloadFromRequest = async req => {
       if (err) {
         reject(err);
       }
-      const { title, author, issueId, paid } = fields;
+      const { title, author, issueId, paid, description } = fields;
       if (!isEmpty(files)) {
         const { filepath } = files['file'];
-        resolve({ filepath, title, author, issueId, paid });
+        resolve({ filepath, title, author, issueId, paid, description });
       } else {
-        resolve({ title, author, issueId, paid });
+        resolve({ title, author, issueId, paid, description });
       }
     });
   });
 };
 
-exports.uploadIssue = async archive => {
+exports.getIssues = async query => {
   try {
-    const { title, author } = archive;
+    const issues = await getIssues(query);
+    if (issues) {
+      return [
+        200,
+        {
+          message: 'Successful fetch for issue with query params.',
+          items: issues
+        }
+      ];
+    }
+    return badRequest(`No issues found with selected query params.`);
+  } catch (err) {
+    console.log('Error getting all issues: ', err);
+    return badImplementationRequest('Error getting issues.');
+  }
+};
+
+exports.getIssueById = async issueId => {
+  try {
+    const issue = await getIssueById(issueId);
+    if (issue) {
+      return [
+        200,
+        { message: `Successful fetch for issue ${issueId}.`, issue }
+      ];
+    }
+    return badRequest(`No issue found with id provided.`);
+  } catch (err) {
+    console.log('Error getting issue by id ', err);
+    return badImplementationRequest('Error getting issue by id.');
+  }
+};
+
+exports.createIssue = async archive => {
+  try {
+    const { title, author, description } = archive;
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of issue must not have spaces.');
+    }
+    if (description && description.length > 255) {
+      return badRequest(
+        'Description must be provided and less than 255 characters long.'
+      );
     }
     const issue = await getIssueByTitle(title);
     if (issue) {
@@ -63,14 +104,14 @@ exports.uploadIssue = async archive => {
         const body = {
           title,
           author,
+          description,
           url: s3Location
         };
-        const savedIssue = await saveIssueRefToDB(body);
-        return {
-          statusCode: 200,
-          message: 'Issue uploaded to s3 with success',
-          issue: savedIssue
-        };
+        const savedIssue = await createIssue(body);
+        return [
+          200,
+          { message: 'Issue uploaded to s3 with success', issue: savedIssue }
+        ];
       } else {
         await createS3Bucket();
         const isBucketAvaiable = await doesS3BucketExist();
@@ -79,14 +120,14 @@ exports.uploadIssue = async archive => {
           const body = {
             title,
             author,
+            description,
             url: s3Location
           };
-          const savedIssue = await saveIssueRefToDB(body);
-          return {
-            statusCode: 200,
-            message: 'Issue uploaded to s3 with success',
-            issue: savedIssue
-          };
+          const savedIssue = await createIssue(body);
+          return [
+            200,
+            { message: 'Issue uploaded to s3 with success', issue: savedIssue }
+          ];
         } else {
           return badRequest('Unable to create s3 bucket.');
         }
@@ -98,62 +139,16 @@ exports.uploadIssue = async archive => {
   }
 };
 
-exports.getIssues = async query => {
-  try {
-    const issues = await getIssues(query);
-    if (issues.length) {
-      return {
-        statusCode: 200,
-        items: issues
-      };
-    } else {
-      return badRequest(`No issues found with selected query params.`);
-    }
-  } catch (err) {
-    console.log('Error getting all issues: ', err);
-    return badImplementationRequest('Error getting issues.');
-  }
-};
-
-exports.getIssue = async issueId => {
-  try {
-    const issue = await getIssueById(issueId);
-    if (issue) {
-      return {
-        statusCode: 200,
-        issue
-      };
-    } else {
-      return badRequest(`No issue found with id provided.`);
-    }
-  } catch (err) {
-    console.log('Error getting issue by id ', err);
-    return badImplementationRequest('Error getting issue by id.');
-  }
-};
-
-exports.updateViews = async issueId => {
-  try {
-    const issueViews = await updateIssueViews(issueId);
-    if (issueViews) {
-      return {
-        statusCode: 200,
-        message: `${issueId} has ${issueViews} views.`,
-        views: issueViews
-      };
-    }
-    return badRequest(`No issues found to update clicks.`);
-  } catch (err) {
-    console.log('Error updating views on issue: ', err);
-    return badImplementationRequest('Error updating views.');
-  }
-};
-
 exports.updateIssue = async archive => {
   try {
-    const { title, filepath, issueId } = archive;
+    const { title, filepath, issueId, description, author, url } = archive;
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of issue must not have spaces.');
+    }
+    if (description && description.length > 255) {
+      return badRequest(
+        'Description must be provided and less than 255 characters long.'
+      );
     }
     const issue = await getIssueById(issueId);
     if (issue) {
@@ -166,31 +161,45 @@ exports.updateIssue = async archive => {
           }
           const s3Location = await uploadArchiveToS3Location(archive);
           const body = {
-            ...archive,
+            title,
+            issueId,
+            description,
+            author,
             url: s3Location
           };
           await updateIssue(body);
-          return {
-            statusCode: 200,
-            message: 'Issue uploaded to s3 with success',
-            issue: {
-              ...archive,
-              url: s3Location
+          return [
+            200,
+            {
+              message: 'Issue uploaded to s3 with success',
+              issue: {
+                title,
+                issueId,
+                description,
+                author,
+                url: s3Location
+              }
             }
-          };
+          ];
         }
       } else {
         const body = {
-          ...archive
+          title,
+          issueId,
+          description,
+          author,
+          url
         };
         await updateIssue(body);
-        return {
-          statusCode: 200,
-          message: 'Issue updated with success.',
-          issue: {
-            ...archive
+        return [
+          200,
+          {
+            message: 'Issue updated with success.',
+            issue: {
+              ...archive
+            }
           }
-        };
+        ];
       }
     } else {
       return badRequest(`No issueId was passed to update issue.`);
@@ -198,5 +207,39 @@ exports.updateIssue = async archive => {
   } catch (err) {
     console.log(`Error updating issue metadata: `, err);
     return badImplementationRequest('Error updating issue metadata.');
+  }
+};
+
+exports.updateViews = async issueId => {
+  try {
+    const issueViews = await updateIssueViews(issueId);
+    if (issueViews) {
+      return [
+        200,
+        { message: `${issueId} has ${issueViews} views.`, views: issueViews }
+      ];
+    }
+    return badRequest(`No issues found to update clicks.`);
+  } catch (err) {
+    console.log('Error updating views on issue: ', err);
+    return badImplementationRequest('Error updating views.');
+  }
+};
+
+exports.deleteIssueById = async issueId => {
+  try {
+    const issue = await getIssueById(issueId);
+    if (issue) {
+      const { title } = issue;
+      await deleteIssueByKey(title);
+      const deletedIssue = await deleteIssueById(issueId);
+      if (deletedIssue) {
+        return [204, { message: `Successful deleted issue: ${issueId}.` }];
+      }
+    }
+    return badRequest(`No issue found with id provided.`);
+  } catch (err) {
+    console.log('Error deleting issue by id: ', err);
+    return badImplementationRequest('Error deleting issue by id.');
   }
 };

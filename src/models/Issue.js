@@ -8,12 +8,13 @@ const { Schema } = mongoose;
 const autoIncrement = mongooseSequence(mongoose);
 const { NODE_ENV } = config;
 
-//VIDEO SCHEMA
+//ISSU$ SCHEMA
 //  ============================================
 const issueSchema = new Schema(
   {
     title: { type: String, required: true },
     url: { type: String, required: true },
+    description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     author: { type: String, required: true },
     paid: {

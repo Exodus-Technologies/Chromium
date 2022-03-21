@@ -3,7 +3,7 @@
 /**
  * https://github.com/validatorjs/validator.js#validators
  */
-import { body, query, validationResult } from 'express-validator';
+import { query, body, param, validationResult } from 'express-validator';
 
 const issueQueryValidation = [
   query('limit')
@@ -21,10 +21,23 @@ const issueQueryValidation = [
     .isString()
     .withMessage('Must provide a valid issue author')
     .optional(),
-  body('paid')
+  query('paid')
     .isBoolean()
     .withMessage('Must provide a valid status for paid vs free issues')
     .optional()
 ];
 
-export { validationResult, issueQueryValidation };
+const issueIdParamValidation = [
+  param('issueId').isString().withMessage('Must provide an id for a issue.')
+];
+
+const issueViewsUpdateValidation = [
+  body('issueId').isString().withMessage('Must provide a existing issue id.')
+];
+
+export {
+  validationResult,
+  issueQueryValidation,
+  issueIdParamValidation,
+  issueViewsUpdateValidation
+};

@@ -123,7 +123,7 @@ export const createS3Bucket = () => {
   });
 };
 
-export const deleteVideoByKey = key => {
+export const deleteIssueByKey = key => {
   return new Promise(async (resolve, reject) => {
     try {
       const params = {
@@ -135,7 +135,7 @@ export const deleteVideoByKey = key => {
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
       console.log({
-        message: 'deleteVideoByKey',
+        message: 'deleteIssueByKey',
         requestId,
         cfId,
         extendedRequestId
