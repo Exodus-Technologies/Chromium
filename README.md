@@ -58,7 +58,6 @@ Chromium utilizes dotenv[https://github.com/motdotla/dotenv] for environment var
 - PORT (application port)
 - HOST (hostname for application)
 - CLUSTER_NAME (mongo db clsuter name)
-- ISSUE_COLLECTION_NAME (name of issue collection)
 - DB_NAME (databse name)
 - DB_USER (databse user name)
 - DB_PASS (databse user password)
