@@ -144,7 +144,7 @@ exports.createIssue = async archive => {
 
 exports.updateIssue = async archive => {
   try {
-    const { title, filepath, issueId, description, author, url } = archive;
+    const { title, filepath, issueId, description, author } = archive;
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of issue must not have spaces.');
     }
@@ -186,6 +186,7 @@ exports.updateIssue = async archive => {
           ];
         }
       } else {
+        const url = await getObjectUrlFromS3(title);
         const body = {
           title,
           issueId,
@@ -209,7 +210,7 @@ exports.updateIssue = async archive => {
         ];
       }
     } else {
-      return badRequest(`No issueId was passed to update issue.`);
+      return badRequest(`No issue was found for issueId passed.`);
     }
   } catch (err) {
     console.log(`Error updating issue metadata: `, err);
