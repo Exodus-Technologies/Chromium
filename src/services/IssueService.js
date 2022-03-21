@@ -83,7 +83,10 @@ exports.getIssueById = async issueId => {
 
 exports.createIssue = async archive => {
   try {
-    const { title, author, description } = archive;
+    const { title, author, description, filepath } = archive;
+    if (!filepath) {
+      return badRequest('File must be provided to upload.');
+    }
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of issue must not have spaces.');
     }
@@ -196,7 +199,11 @@ exports.updateIssue = async archive => {
           {
             message: 'Issue updated with success.',
             issue: {
-              ...archive
+              title,
+              issueId,
+              description,
+              author,
+              url
             }
           }
         ];
@@ -234,7 +241,7 @@ exports.deleteIssueById = async issueId => {
       await deleteIssueByKey(title);
       const deletedIssue = await deleteIssueById(issueId);
       if (deletedIssue) {
-        return [204, { message: `Successful deleted issue: ${issueId}.` }];
+        return [204];
       }
     }
     return badRequest(`No issue found with id provided.`);

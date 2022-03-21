@@ -60,8 +60,8 @@ exports.updateViews = async (req, res, next) => {
 exports.deleteIssueById = async (req, res, next) => {
   try {
     const { issueId } = req.params;
-    const [statusCode, response] = await IssueService.deleteIssueById(issueId);
-    res.status(statusCode).send(response);
+    const [statusCode] = await IssueService.deleteIssueById(issueId);
+    res.status(statusCode).end();
   } catch (err) {
     console.log(`Error with deleteing an issue: `, err);
     next(err);
