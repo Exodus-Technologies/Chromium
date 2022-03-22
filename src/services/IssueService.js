@@ -144,7 +144,7 @@ exports.createIssue = async archive => {
 
 exports.updateIssue = async archive => {
   try {
-    const { title, filepath, issueId, description, author } = archive;
+    const { title, filepath, issueId, description, author, paid } = archive;
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of issue must not have spaces.');
     }
@@ -168,6 +168,7 @@ exports.updateIssue = async archive => {
             issueId,
             description,
             author,
+            paid,
             url: s3Location
           };
           await updateIssue(body);
@@ -180,6 +181,7 @@ exports.updateIssue = async archive => {
                 issueId,
                 description,
                 author,
+                paid,
                 url: s3Location
               }
             }
@@ -192,6 +194,7 @@ exports.updateIssue = async archive => {
           issueId,
           description,
           author,
+          paid,
           url
         };
         await updateIssue(body);
@@ -204,6 +207,7 @@ exports.updateIssue = async archive => {
               issueId,
               description,
               author,
+              paid,
               url
             }
           }
@@ -224,7 +228,10 @@ exports.updateViews = async issueId => {
     if (issueViews) {
       return [
         200,
-        { message: `${issueId} has ${issueViews} views.`, views: issueViews }
+        {
+          message: `issueId: ${issueId} has ${issueViews} views.`,
+          views: issueViews
+        }
       ];
     }
     return badRequest(`No issues found to update clicks.`);
