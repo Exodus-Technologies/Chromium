@@ -1,6 +1,5 @@
 'use strict';
 
-import path from 'path';
 import fs from 'fs';
 import {
   S3Client,
@@ -12,6 +11,7 @@ import {
   CopyObjectCommand
 } from '@aws-sdk/client-s3';
 import config from '../config';
+import { DEFAULT_FILE_EXTENTION } from '../constants';
 
 const { aws } = config.sources;
 const { accessKeyId, secretAccessKey, s3BucketName, region } = aws;
@@ -24,23 +24,6 @@ const s3Client = new S3Client({
     region
   }
 });
-
-const getFileContentFromUrl = (url, path, name) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const destinationPath = `${path}/${name}`;
-      const file = fs.createWriteStream(destinationPath);
-      https.get(url, function (response) {
-        response.pipe(file);
-      });
-      const fileContent = await getFileContentFromPath(destinationPath);
-      resolve(fileContent);
-    } catch (err) {
-      console.log(`Error getting file from url: ${url} `, err);
-      reject(err);
-    }
-  });
-};
 
 const getFileContentFromPath = path => {
   return new Promise(async (resolve, reject) => {
@@ -82,7 +65,7 @@ export const doesS3ObjectExist = key => {
     try {
       const params = {
         Bucket: s3BucketName,
-        Key: key
+        Key: `${key}.${DEFAULT_FILE_EXTENTION}`
       };
       const s3Object = await s3Client.send(new HeadObjectCommand(params));
       resolve(s3Object);
@@ -104,8 +87,8 @@ export const copyS3Object = (oldKey, newKey) => {
     try {
       const params = {
         Bucket: s3BucketName,
-        CopySource: `${s3BucketName}/${oldKey}`,
-        Key: newKey
+        CopySource: `${s3BucketName}/${oldKey}.${DEFAULT_FILE_EXTENTION}`,
+        Key: `${newKey}.${DEFAULT_FILE_EXTENTION}`
       };
       await s3Client.send(new CopyObjectCommand(params));
       resolve();
@@ -123,7 +106,7 @@ export const copyS3Object = (oldKey, newKey) => {
 };
 
 export const getObjectUrlFromS3 = fileName => {
-  return `https://${s3BucketName}.s3.amazonaws.com/${fileName}`;
+  return `https://${s3BucketName}.s3.amazonaws.com/${fileName}.${DEFAULT_FILE_EXTENTION}`;
 };
 
 export const createS3Bucket = () => {
@@ -152,7 +135,7 @@ export const deleteIssueByKey = key => {
     try {
       const params = {
         Bucket: s3BucketName,
-        Key: key
+        Key: `${key}.${DEFAULT_FILE_EXTENTION}`
       };
       await s3Client.send(new DeleteObjectCommand(params));
       resolve();
@@ -174,7 +157,7 @@ const uploadToS3 = (fileContent, key) => {
     // Setting up S3 upload parameters
     const params = {
       Bucket: s3BucketName,
-      Key: key, // File name you want to save as in S3
+      Key: `${key}.${DEFAULT_FILE_EXTENTION}`, // File name you want to save as in S3
       Body: fileContent,
       ACL: 'public-read'
     };
@@ -190,24 +173,11 @@ const uploadToS3 = (fileContent, key) => {
 
 export const uploadArchiveToS3Location = async file => {
   return new Promise(async (resolve, reject) => {
-    const { title, url, filepath } = file;
-    // Read content from the file
-    const uploadsPath = path.join(process.cwd(), `./uploads/`);
-
-    let fileContent = '';
-    if (filepath) {
-      fileContent = await getFileContentFromPath(filepath);
-    }
-    if (url) {
-      fileContent = await getFileContentFromUrl(url, uploadsPath, title);
-    }
-
     try {
+      const { title, filepath } = file;
+      const fileContent = await getFileContentFromPath(filepath);
       await uploadToS3(fileContent, title);
       const fileLocation = getObjectUrlFromS3(title);
-      if (url) {
-        fs.unlinkSync(tmpArchivePath);
-      }
       resolve(fileLocation);
     } catch (err) {
       console.log(`Error uploading archive to s3 bucket: ${file} `, err);
