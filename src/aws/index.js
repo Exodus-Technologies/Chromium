@@ -8,7 +8,8 @@ import {
   ListBucketsCommand,
   HeadObjectCommand,
   CreateBucketCommand,
-  DeleteObjectCommand
+  DeleteObjectCommand,
+  CopyObjectCommand
 } from '@aws-sdk/client-s3';
 import config from '../config';
 
@@ -89,6 +90,29 @@ export const doesS3ObjectExist = key => {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
       console.log({
         message: 'doesS3ObjectExist',
+        requestId,
+        cfId,
+        extendedRequestId
+      });
+      reject(err);
+    }
+  });
+};
+
+export const copyS3Object = (oldKey, newKey) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3BucketName,
+        CopySource: `${s3BucketName}/${oldKey}`,
+        Key: newKey
+      };
+      await s3Client.send(new CopyObjectCommand(params));
+      resolve();
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'copyS3Object',
         requestId,
         cfId,
         extendedRequestId
