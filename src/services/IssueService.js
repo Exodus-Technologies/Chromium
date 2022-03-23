@@ -35,12 +35,12 @@ exports.getPayloadFromRequest = async req => {
       if (err) {
         reject(err);
       }
-      const { title, author, issueId, paid, description } = fields;
+      const file = { ...fields };
       if (!isEmpty(files)) {
         const { filepath } = files['file'];
-        resolve({ filepath, title, author, issueId, paid, description });
+        resolve({ ...file, filepath });
       } else {
-        resolve({ title, author, issueId, paid, description });
+        resolve(file);
       }
     });
   });
@@ -155,6 +155,34 @@ exports.updateIssue = async archive => {
     }
     const issue = await getIssueById(issueId);
     if (issue) {
+      if (title !== issue.title) {
+        await copyS3Object(issue.title, title);
+        const s3Location = getObjectUrlFromS3(title);
+        const body = {
+          title,
+          issueId,
+          description,
+          author,
+          paid,
+          url: s3Location
+        };
+        await updateIssue(body);
+        await deleteIssueByKey(issue.title);
+        return [
+          200,
+          {
+            message: 'Issue updated in s3 with success',
+            issue: {
+              title,
+              issueId,
+              description,
+              author,
+              paid,
+              url: s3Location
+            }
+          }
+        ];
+      }
       if (filepath) {
         const isBucketAvaiable = await doesS3BucketExist();
         if (isBucketAvaiable) {

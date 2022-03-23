@@ -31,7 +31,7 @@ const issueIdParamValidation = [
   param('issueId').isString().withMessage('Must provide an id for a issue.')
 ];
 
-const issueViewsUpdateValidation = [
+const issueIdBodyValidation = [
   body('issueId').isString().withMessage('Must provide a existing issue id.')
 ];
 
@@ -39,5 +39,5 @@ export {
   validationResult,
   issueQueryValidation,
   issueIdParamValidation,
-  issueViewsUpdateValidation
+  issueIdBodyValidation
 };

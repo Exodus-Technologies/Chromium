@@ -7,7 +7,7 @@ import { IssueController } from '../controllers';
 import {
   issueQueryValidation,
   issueIdParamValidation,
-  issueViewsUpdateValidation
+  issueIdBodyValidation
 } from '../validations';
 import { validationHandler } from '../utils';
 
@@ -33,7 +33,7 @@ router.put('/issue-service/updateIssue', IssueController.updateIssue);
 
 router.put(
   '/issue-service/updateViews',
-  issueViewsUpdateValidation,
+  issueIdBodyValidation,
   validationHandler,
   IssueController.updateViews
 );
