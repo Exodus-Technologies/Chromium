@@ -5,7 +5,7 @@ import { validationResult } from '../validations';
 import config from '../config';
 
 const nodeCache = new NodeCache();
-const { defaultCache } = config;
+const { defaultCacheTtl } = config;
 
 const requestResponse = (req, res, next) => {
   console.info(`${req.method} ${req.originalUrl}`);
