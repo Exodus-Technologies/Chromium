@@ -57,6 +57,7 @@ Chromium utilizes dotenv[https://github.com/motdotla/dotenv] for environment var
 - NODE_ENV (node environment)
 - PORT (application port)
 - HOST (hostname for application)
+- DEFAULT_CACHE_TTL (ttl for node cache module for requests)
 - CLUSTER_NAME (mongo db clsuter name)
 - DB_NAME (databse name)
 - DB_USER (databse user name)

@@ -8,7 +8,7 @@ import noCache from 'nocache';
 import cors from 'cors';
 import responseTime from 'response-time';
 
-import { requestResponse, errorHandler } from './utils';
+import { requestResponse, errorHandler } from './middlewares';
 import { appRouter, issueRouter } from './routes';
 
 // Create the Express application object
