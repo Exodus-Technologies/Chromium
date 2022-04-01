@@ -54,7 +54,7 @@ exports.getIssues = async query => {
         200,
         {
           message: 'Successful fetch for issue with query params.',
-          items: issues
+          issues
         }
       ];
     }
