@@ -9,7 +9,7 @@ import {
   issueIdParamValidation,
   issueIdBodyValidation
 } from '../validations';
-import { validationHandler, cache } from '../middlewares';
+import { validationHandler } from '../middlewares';
 
 const router = Router();
 
@@ -17,7 +17,6 @@ router.get(
   '/issue-service/getIssues',
   issueQueryValidation,
   validationHandler,
-  cache(),
   IssueController.getIssues
 );
 
@@ -25,7 +24,6 @@ router.get(
   '/issue-service/getIssue/:issueId',
   issueIdParamValidation,
   validationHandler,
-  cache(),
   IssueController.getIssueById
 );
 
