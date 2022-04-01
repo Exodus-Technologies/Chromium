@@ -17,7 +17,7 @@ export const getIssues = async query => {
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
     const skipIndex = (page - 1) * limit;
-    return await Issue.find({}, queryOps)
+    return await Issue.find(query, queryOps)
       .sort({ _id: 1 })
       .limit(limit)
       .skip(skipIndex)
