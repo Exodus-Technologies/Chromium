@@ -6,13 +6,16 @@
 import { query, body, param, validationResult } from 'express-validator';
 
 const issueQueryValidation = [
+  query('page')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a page for issues'),
   query('limit')
     .isString()
     .not()
     .isEmpty()
-    .withMessage('Must provide a limit for issues')
-    .optional()
-    .default(30),
+    .withMessage('Must provide a limit for issues'),
   query('title')
     .isString()
     .withMessage('Must provide a existing issue title')

@@ -12,21 +12,39 @@ export const generateDBUri = () => {
 const queryOps = { __v: 0, _id: 0 };
 
 export const getIssues = async query => {
-  const { Issue } = models;
-  const issues = await Issue.find(query, queryOps);
-  return issues;
+  try {
+    const { Issue } = models;
+    const page = parseInt(query.page);
+    const limit = parseInt(query.limit);
+    const skipIndex = (page - 1) * limit;
+    return await Issue.find(query, queryOps)
+      .sort({ _id: 1 })
+      .limit(limit)
+      .skip(skipIndex)
+      .exec();
+  } catch (err) {
+    console.log('Error getting issue data from db: ', err);
+  }
 };
 
 export const getIssueById = async issueId => {
-  const { Issue } = models;
-  const issue = await Issue.findOne({ issueId });
-  return issue;
+  try {
+    const { Issue } = models;
+    const issue = await Issue.findOne({ issueId });
+    return issue;
+  } catch (err) {
+    console.log('Error getting issue data from db by id: ', err);
+  }
 };
 
 export const getIssueByTitle = async title => {
-  const { Issue } = models;
-  const issue = await Issue.findOne({ title });
-  return issue;
+  try {
+    const { Issue } = models;
+    const issue = await Issue.findOne({ title });
+    return issue;
+  } catch (err) {
+    console.log('Error getting issue data from db by title: ', err);
+  }
 };
 
 export const createIssue = async payload => {
@@ -55,7 +73,11 @@ export const updateIssue = async payload => {
 };
 
 export const deleteIssueById = async issueId => {
-  const { Issue } = models;
-  const deletedIssue = await Issue.deleteOne({ issueId });
-  return deletedIssue;
+  try {
+    const { Issue } = models;
+    const deletedIssue = await Issue.deleteOne({ issueId });
+    return deletedIssue;
+  } catch (err) {
+    console.log('Error deleting issue data from db: ', err);
+  }
 };
