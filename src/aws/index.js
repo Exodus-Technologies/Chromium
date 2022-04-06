@@ -174,10 +174,10 @@ const uploadToS3 = (fileContent, key) => {
 export const uploadArchiveToS3Location = async file => {
   return new Promise(async (resolve, reject) => {
     try {
-      const { title, filepath } = file;
+      const { filepath, key } = file;
       const fileContent = await getFileContentFromPath(filepath);
-      await uploadToS3(fileContent, title);
-      const fileLocation = getObjectUrlFromS3(title);
+      await uploadToS3(fileContent, key);
+      const fileLocation = getObjectUrlFromS3(key);
       resolve(fileLocation);
     } catch (err) {
       console.log(`Error uploading archive to s3 bucket: ${file} `, err);

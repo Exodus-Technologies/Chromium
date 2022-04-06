@@ -17,6 +17,7 @@ const issueSchema = new Schema(
     description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     author: { type: String, required: true },
+    key: { type: String, required: true },
     paid: {
       type: Boolean,
       default: false
