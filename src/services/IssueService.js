@@ -4,9 +4,10 @@ import formidable from 'formidable';
 import {
   uploadArchiveToS3Location,
   doesS3BucketExist,
-  createS3Bucket,
   doesS3ObjectExist,
-  deleteIssueByKey
+  deleteIssueByKey,
+  copyS3Object,
+  getObjectUrlFromS3
 } from '../aws';
 import {
   createIssue,
@@ -25,8 +26,8 @@ function isEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
 
-function doesValueHaveSpaces(str) {
-  return /\s/.test(str);
+function removeSpaces(str) {
+  return str.replace(/\s+/g, '');
 }
 
 exports.getPayloadFromRequest = async req => {
@@ -35,7 +36,7 @@ exports.getPayloadFromRequest = async req => {
       if (err) {
         reject(err);
       }
-      const file = { ...fields };
+      const file = { ...fields, key: removeSpaces(fields.title) };
       if (!isEmpty(files)) {
         const { filepath } = files['file'];
         resolve({ ...file, filepath });
@@ -83,12 +84,9 @@ exports.getIssueById = async issueId => {
 
 exports.createIssue = async archive => {
   try {
-    const { title, author, description, filepath } = archive;
+    const { title, author, description, filepath, key } = archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
-    }
-    if (doesValueHaveSpaces(title)) {
-      return badRequest('Title of issue must not have spaces.');
     }
     if (description && description.length > 255) {
       return badRequest(
@@ -108,6 +106,7 @@ exports.createIssue = async archive => {
           title,
           author,
           description,
+          key,
           url: s3Location
         };
         const savedIssue = await createIssue(body);
@@ -115,25 +114,6 @@ exports.createIssue = async archive => {
           200,
           { message: 'Issue uploaded to s3 with success', issue: savedIssue }
         ];
-      } else {
-        await createS3Bucket();
-        const isBucketAvaiable = await doesS3BucketExist();
-        if (isBucketAvaiable) {
-          const s3Location = await uploadArchiveToS3Location(archive);
-          const body = {
-            title,
-            author,
-            description,
-            url: s3Location
-          };
-          const savedIssue = await createIssue(body);
-          return [
-            200,
-            { message: 'Issue uploaded to s3 with success', issue: savedIssue }
-          ];
-        } else {
-          return badRequest('Unable to create s3 bucket.');
-        }
       }
     }
   } catch (err) {
@@ -145,9 +125,6 @@ exports.createIssue = async archive => {
 exports.updateIssue = async archive => {
   try {
     const { title, filepath, issueId, description, author, paid } = archive;
-    if (doesValueHaveSpaces(title)) {
-      return badRequest('Title of issue must not have spaces.');
-    }
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -155,19 +132,21 @@ exports.updateIssue = async archive => {
     }
     const issue = await getIssueById(issueId);
     if (issue) {
-      if (title !== issue.title) {
-        await copyS3Object(issue.title, title);
-        const s3Location = getObjectUrlFromS3(title);
+      const newKey = removeSpaces(title);
+      if (newKey !== issue.key) {
+        await copyS3Object(issue.key, newKey);
+        const s3Location = getObjectUrlFromS3(newKey);
         const body = {
           title,
           issueId,
           description,
           author,
+          key: newKey,
           paid,
           url: s3Location
         };
         await updateIssue(body);
-        await deleteIssueByKey(issue.title);
+        await deleteIssueByKey(issue.key);
         return [
           200,
           {
@@ -186,15 +165,16 @@ exports.updateIssue = async archive => {
       if (filepath) {
         const isBucketAvaiable = await doesS3BucketExist();
         if (isBucketAvaiable) {
-          const s3Object = await doesS3ObjectExist(title);
+          const s3Object = await doesS3ObjectExist(newKey);
           if (s3Object) {
-            await deleteIssueByKey(title);
+            await deleteIssueByKey(newKey);
           }
           const s3Location = await uploadArchiveToS3Location(archive);
           const body = {
             title,
             issueId,
             description,
+            key: newKey,
             author,
             paid,
             url: s3Location
@@ -216,7 +196,7 @@ exports.updateIssue = async archive => {
           ];
         }
       } else {
-        const url = await getObjectUrlFromS3(title);
+        const url = await getObjectUrlFromS3(newKey);
         const body = {
           title,
           issueId,
@@ -273,8 +253,8 @@ exports.deleteIssueById = async issueId => {
   try {
     const issue = await getIssueById(issueId);
     if (issue) {
-      const { title } = issue;
-      await deleteIssueByKey(title);
+      const { key } = issue;
+      await deleteIssueByKey(key);
       const deletedIssue = await deleteIssueById(issueId);
       if (deletedIssue) {
         return [204];
