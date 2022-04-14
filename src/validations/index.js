@@ -10,23 +10,31 @@ const issueQueryValidation = [
     .isString()
     .not()
     .isEmpty()
-    .withMessage('Must provide a page for issues'),
+    .withMessage('Must provide a page for issues.'),
   query('limit')
     .isString()
     .not()
     .isEmpty()
-    .withMessage('Must provide a limit for issues'),
+    .withMessage('Must provide a limit for issues.'),
   query('title')
     .isString()
-    .withMessage('Must provide a existing issue title')
+    .withMessage('Must provide a existing issue title.')
     .optional(),
   query('author')
     .isString()
-    .withMessage('Must provide a valid issue author')
+    .withMessage('Must provide a valid issue author.')
+    .optional(),
+  query('price')
+    .isString()
+    .withMessage('Must provide a price for issue.')
+    .optional(),
+  query('magazineId')
+    .isString()
+    .withMessage('Must provide a magazineId for associated issue.')
     .optional(),
   query('paid')
     .isBoolean()
-    .withMessage('Must provide a valid status for paid vs free issues')
+    .withMessage('Must provide a valid status for paid vs free issues.')
     .optional()
 ];
 
