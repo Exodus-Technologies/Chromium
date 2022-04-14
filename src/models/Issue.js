@@ -18,6 +18,8 @@ const issueSchema = new Schema(
     totalViews: { type: Number, default: 0 },
     author: { type: String, required: true },
     key: { type: String, required: true },
+    price: { type: String, required: true },
+    magazineId: { type: String, required: true },
     paid: {
       type: Boolean,
       default: false
