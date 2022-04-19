@@ -24,17 +24,9 @@ const issueQueryValidation = [
     .isString()
     .withMessage('Must provide a valid issue author.')
     .optional(),
-  query('price')
-    .isString()
-    .withMessage('Must provide a price for issue.')
-    .optional(),
   query('magazineId')
     .isString()
     .withMessage('Must provide a magazineId for associated issue.')
-    .optional(),
-  query('paid')
-    .isBoolean()
-    .withMessage('Must provide a valid status for paid vs free issues.')
     .optional()
 ];
 
