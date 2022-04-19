@@ -52,26 +52,15 @@ export const createIssue = async payload => {
     const { Issue } = models;
     const issue = new Issue(payload);
     const createdIssue = await issue.save();
-    const {
-      title,
-      url,
-      description,
-      totalViews,
-      author,
-      paid,
-      issueId,
-      price,
-      magazineId
-    } = createdIssue;
+    const { title, url, description, totalViews, author, issueId, magazineId } =
+      createdIssue;
     return {
       title,
       url,
       description,
       totalViews,
       author,
-      paid,
       issueId,
-      price,
       magazineId
     };
   } catch (err) {

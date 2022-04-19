@@ -30,11 +30,6 @@ function removeSpaces(str) {
   return str.replace(/\s+/g, '');
 }
 
-function checkPriceStr(str) {
-  const regex = new RegExp('^d+(?:[.,]d+)*$');
-  return regex.test(str);
-}
-
 exports.getPayloadFromRequest = async req => {
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
@@ -89,19 +84,12 @@ exports.getIssueById = async issueId => {
 
 exports.createIssue = async archive => {
   try {
-    const { title, author, description, filepath, key, price, magazineId } =
-      archive;
+    const { title, author, description, filepath, key, magazineId } = archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
     }
     if (!magazineId) {
       return badRequest('Magazine Id must be provided to upload.');
-    }
-    if (!price) {
-      return badRequest('Price must be provided to upload.');
-    }
-    if (price && !checkPriceStr(price)) {
-      return badRequest('Price must be in a dollar format.');
     }
     if (description && description.length > 255) {
       return badRequest(
@@ -122,7 +110,6 @@ exports.createIssue = async archive => {
           author,
           description,
           key,
-          price,
           magazineId,
           url: s3Location
         };
@@ -141,23 +128,12 @@ exports.createIssue = async archive => {
 
 exports.updateIssue = async archive => {
   try {
-    const {
-      title,
-      filepath,
-      issueId,
-      description,
-      author,
-      paid,
-      price,
-      magazineId
-    } = archive;
+    const { title, filepath, issueId, description, author, magazineId } =
+      archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
       );
-    }
-    if (price && !checkPriceStr(price)) {
-      return badRequest('Price must be in a dollar format.');
     }
     const issue = await getIssueById(issueId);
     if (issue) {
@@ -171,8 +147,6 @@ exports.updateIssue = async archive => {
           description,
           author,
           key: newKey,
-          paid,
-          price,
           magazineId,
           url: s3Location
         };
@@ -187,8 +161,6 @@ exports.updateIssue = async archive => {
               issueId,
               description,
               author,
-              paid,
-              price,
               magazineId,
               url: s3Location
             }
@@ -209,8 +181,6 @@ exports.updateIssue = async archive => {
             description,
             key: newKey,
             author,
-            paid,
-            price,
             magazineId,
             url: s3Location
           };
@@ -224,8 +194,6 @@ exports.updateIssue = async archive => {
                 issueId,
                 description,
                 author,
-                paid,
-                price,
                 magazineId,
                 url: s3Location
               }
@@ -239,8 +207,6 @@ exports.updateIssue = async archive => {
           issueId,
           description,
           author,
-          paid,
-          price,
           magazineId,
           url
         };
@@ -254,8 +220,6 @@ exports.updateIssue = async archive => {
               issueId,
               description,
               author,
-              paid,
-              price,
               magazineId,
               url
             }
