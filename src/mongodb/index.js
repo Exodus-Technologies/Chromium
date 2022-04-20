@@ -52,7 +52,7 @@ export const createIssue = async payload => {
     const { Issue } = models;
     const issue = new Issue(payload);
     const createdIssue = await issue.save();
-    const { title, url, description, totalViews, author, issueId, magazineId } =
+    const { title, url, description, totalViews, author, issueId } =
       createdIssue;
     return {
       title,
@@ -60,8 +60,7 @@ export const createIssue = async payload => {
       description,
       totalViews,
       author,
-      issueId,
-      magazineId
+      issueId
     };
   } catch (err) {
     console.log('Error saving issue data to db: ', err);

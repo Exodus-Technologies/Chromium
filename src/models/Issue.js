@@ -17,8 +17,7 @@ const issueSchema = new Schema(
     description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     author: { type: String, required: true },
-    key: { type: String, required: true },
-    magazineId: { type: String, required: true }
+    key: { type: String, required: true }
   },
   { timestamps: true }
 );
