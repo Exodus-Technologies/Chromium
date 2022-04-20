@@ -84,12 +84,9 @@ exports.getIssueById = async issueId => {
 
 exports.createIssue = async archive => {
   try {
-    const { title, author, description, filepath, key, magazineId } = archive;
+    const { title, author, description, filepath, key } = archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
-    }
-    if (!magazineId) {
-      return badRequest('Magazine Id must be provided to upload.');
     }
     if (description && description.length > 255) {
       return badRequest(
@@ -110,7 +107,6 @@ exports.createIssue = async archive => {
           author,
           description,
           key,
-          magazineId,
           url: s3Location
         };
         const savedIssue = await createIssue(body);
@@ -128,8 +124,7 @@ exports.createIssue = async archive => {
 
 exports.updateIssue = async archive => {
   try {
-    const { title, filepath, issueId, description, author, magazineId } =
-      archive;
+    const { title, filepath, issueId, description, author } = archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -147,7 +142,6 @@ exports.updateIssue = async archive => {
           description,
           author,
           key: newKey,
-          magazineId,
           url: s3Location
         };
         await updateIssue(body);
@@ -161,7 +155,6 @@ exports.updateIssue = async archive => {
               issueId,
               description,
               author,
-              magazineId,
               url: s3Location
             }
           }
@@ -181,7 +174,6 @@ exports.updateIssue = async archive => {
             description,
             key: newKey,
             author,
-            magazineId,
             url: s3Location
           };
           await updateIssue(body);
@@ -194,7 +186,6 @@ exports.updateIssue = async archive => {
                 issueId,
                 description,
                 author,
-                magazineId,
                 url: s3Location
               }
             }
@@ -207,7 +198,6 @@ exports.updateIssue = async archive => {
           issueId,
           description,
           author,
-          magazineId,
           url
         };
         await updateIssue(body);
@@ -220,7 +210,6 @@ exports.updateIssue = async archive => {
               issueId,
               description,
               author,
-              magazineId,
               url
             }
           }

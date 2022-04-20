@@ -45,4 +45,17 @@ router.delete(
   IssueController.deleteIssueById
 );
 
+//Get subscriptions
+router.post('/issue-service/getSubscriptions', IssueController.createIssue);
+
+//Create subscriptions
+//December 30 is the cut off year
+router.post('/issue-service/createSubscription', IssueController.createIssue);
+
+//Update endDate based on current year
+router.put('/issue-service/updateSubscription', IssueController.createIssue);
+
+//Update endDate based on current year
+router.put('/issue-service/getSubscriptionStatus', IssueController.createIssue);
+
 export default router;

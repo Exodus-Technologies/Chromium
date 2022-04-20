@@ -23,10 +23,6 @@ const issueQueryValidation = [
   query('author')
     .isString()
     .withMessage('Must provide a valid issue author.')
-    .optional(),
-  query('magazineId')
-    .isString()
-    .withMessage('Must provide a magazineId for associated issue.')
     .optional()
 ];
 
