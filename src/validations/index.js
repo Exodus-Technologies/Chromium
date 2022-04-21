@@ -23,6 +23,10 @@ const issueQueryValidation = [
   query('author')
     .isString()
     .withMessage('Must provide a valid issue author.')
+    .optional(),
+  query('userId')
+    .isString()
+    .withMessage('Must provide a valid userId.')
     .optional()
 ];
 
@@ -44,7 +48,12 @@ const issueIdParamValidation = [
 ];
 
 const issueIdBodyValidation = [
-  body('issueId').isString().withMessage('Must provide a existing issue id.')
+  body('issueId').isString().withMessage('Must provide an existing issue id.')
+];
+
+const subscriptionPostBodyValidation = [
+  body('amount').isNumeric().withMessage('Must provide a price amount paid.'),
+  body('userId').isNumeric().withMessage('Must provide a valid userId.')
 ];
 
 export {
@@ -52,5 +61,6 @@ export {
   issueQueryValidation,
   issueIdParamValidation,
   issueIdBodyValidation,
-  subscriptionQueryValidation
+  subscriptionQueryValidation,
+  subscriptionPostBodyValidation
 };

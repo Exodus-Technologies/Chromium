@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { v4 as uuidv4 } from 'uuid';
 
 import { DEFAULT_TIME_FORMAT } from '../constants';
 
@@ -16,4 +17,12 @@ export const getSubscriptionEndDate = () => {
     date: 30
   };
   return moment().utc().set(momentObj).format(DEFAULT_TIME_FORMAT);
+};
+
+export const createMoment = date => {
+  return moment(date);
+};
+
+export const createSubscriptionId = () => {
+  return uuidv4();
 };

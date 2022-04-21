@@ -1,14 +1,14 @@
 'use strict';
 
 import mongoose from 'mongoose';
-import config from '../config';
 import mongooseSequence from 'mongoose-sequence';
+import config from '../config';
 
 const { Schema } = mongoose;
 const autoIncrement = mongooseSequence(mongoose);
 const { NODE_ENV } = config;
 
-//ISSU$ SCHEMA
+//ISSUE SCHEMA
 //  ============================================
 const issueSchema = new Schema(
   {

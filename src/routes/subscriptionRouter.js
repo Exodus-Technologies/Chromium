@@ -2,12 +2,14 @@ import express from 'express';
 
 const { Router } = express;
 import { SubscriptionController } from '../controllers';
-import { subscriptionQueryValidation } from '../validations';
+import {
+  subscriptionQueryValidation,
+  subscriptionPostBodyValidation
+} from '../validations';
 import { validationHandler } from '../middlewares';
 
 const router = Router();
 
-//Get subscriptions
 router.get(
   '/issue-service/getSubscriptions',
   subscriptionQueryValidation,
@@ -15,12 +17,12 @@ router.get(
   SubscriptionController.getSubscriptions
 );
 
-//Create subscriptions
-//December 30 is the cut off year
-// router.post(
-//   '/issue-service/createSubscription',
-//   SubscriptionController.createSubscription
-// );
+router.post(
+  '/issue-service/createSubscription',
+  subscriptionPostBodyValidation,
+  validationHandler,
+  SubscriptionController.createSubscription
+);
 
 //Update endDate based on current year
 // router.put(
