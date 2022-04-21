@@ -2,5 +2,6 @@
 
 import appRouter from './appRouter';
 import issueRouter from './issueRouter';
+import subscriptionRouter from './subscriptionRouter';
 
-export { appRouter, issueRouter };
+export { appRouter, issueRouter, subscriptionRouter };
