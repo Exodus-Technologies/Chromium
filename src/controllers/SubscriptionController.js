@@ -14,3 +14,16 @@ exports.getSubscriptions = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.createSubscription = async (req, res, next) => {
+  try {
+    const { body } = req;
+    const [statusCode, response] = await SubscriptionService.createSubscription(
+      body
+    );
+    res.status(statusCode).send(response);
+  } catch (err) {
+    console.log(`Error with getting subscriptions: `, err);
+    next(err);
+  }
+};

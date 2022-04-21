@@ -2,6 +2,8 @@
 
 import config from '../config';
 import models from '../models';
+import { DEFAULT_SUBSCRIPTION_TYPE } from '../constants';
+import { createMoment } from '../utilities';
 
 const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
 
@@ -13,15 +15,34 @@ const queryOps = { __v: 0, _id: 0 };
 
 export const getIssues = async query => {
   try {
-    const { Issue } = models;
+    const { Issue, Subscription } = models;
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
+    const userId = parseInt(query.userId);
     const skipIndex = (page - 1) * limit;
-    return await Issue.find(query, queryOps)
+    const subscriptions = userId
+      ? await Subscription.find({ userId, type: DEFAULT_SUBSCRIPTION_TYPE })
+          .sort({
+            endDate: 'desc'
+          })
+          .limit(1)
+      : null;
+    const issues = await Issue.find(query, queryOps)
       .sort({ _id: 1 })
       .limit(limit)
       .skip(skipIndex)
+      .sort({ createdAt: 'desc' })
+      .lean()
       .exec();
+    return issues.map(issue => ({
+      ...issue,
+      paid:
+        subscriptions && subscriptions.length
+          ? createMoment(issue.createdAt).isBefore(
+              createMoment(subscriptions[0].endDate)
+            )
+          : false
+    }));
   } catch (err) {
     console.log('Error getting issue data from db: ', err);
   }
@@ -93,11 +114,11 @@ export const deleteIssueById = async issueId => {
 
 export const getSubscriptions = async query => {
   try {
-    const { Issue } = models;
+    const { Subscription } = models;
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
     const skipIndex = (page - 1) * limit;
-    return await Issue.find(query, queryOps)
+    return await Subscription.find(query, queryOps)
       .sort({ _id: 1 })
       .limit(limit)
       .skip(skipIndex)
@@ -105,5 +126,48 @@ export const getSubscriptions = async query => {
       .exec();
   } catch (err) {
     console.log('Error getting issue data from db: ', err);
+  }
+};
+
+export const createSubscription = async payload => {
+  try {
+    const { Subscription } = models;
+    const { userId } = payload;
+    const subscription = await Subscription.find({
+      userId,
+      type: DEFAULT_SUBSCRIPTION_TYPE
+    })
+      .sort({
+        endDate: 'desc'
+      })
+      .limit(1);
+    if (!subscription) {
+      const subscription = new Subscription(payload);
+      const createdSubscription = await subscription.save();
+      const {
+        startDate,
+        endDate,
+        type,
+        purchaseDate,
+        amount,
+        userId,
+        subscriptionId
+      } = createdSubscription;
+      return [
+        null,
+        {
+          startDate,
+          endDate,
+          type,
+          purchaseDate,
+          amount,
+          userId,
+          subscriptionId
+        }
+      ];
+    }
+    return [new Error('Subscription is still active for the current year')];
+  } catch (err) {
+    console.log('Error saving subscription data to db: ', err);
   }
 };

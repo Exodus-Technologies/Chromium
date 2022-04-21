@@ -128,7 +128,7 @@ exports.createIssue = async archive => {
 
 exports.updateIssue = async archive => {
   try {
-    const { title, filepath, issueId, description, author } = archive;
+    const { title, filepath, issueId, description, author, mimetype } = archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -165,6 +165,9 @@ exports.updateIssue = async archive => {
         ];
       }
       if (filepath) {
+        if (mimetype !== DEFAULT_MIME_TYPE) {
+          return badRequest('File must be a file with a pdf extention.');
+        }
         const isBucketAvaiable = await doesS3BucketExist();
         if (isBucketAvaiable) {
           const s3Object = await doesS3ObjectExist(newKey);
