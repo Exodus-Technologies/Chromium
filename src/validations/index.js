@@ -26,6 +26,19 @@ const issueQueryValidation = [
     .optional()
 ];
 
+const subscriptionQueryValidation = [
+  query('page')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a page for issues.'),
+  query('limit')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a limit for issues.')
+];
+
 const issueIdParamValidation = [
   param('issueId').isString().withMessage('Must provide an id for a issue.')
 ];
@@ -38,5 +51,6 @@ export {
   validationResult,
   issueQueryValidation,
   issueIdParamValidation,
-  issueIdBodyValidation
+  issueIdBodyValidation,
+  subscriptionQueryValidation
 };

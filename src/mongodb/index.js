@@ -90,3 +90,20 @@ export const deleteIssueById = async issueId => {
     console.log('Error deleting issue data from db: ', err);
   }
 };
+
+export const getSubscriptions = async query => {
+  try {
+    const { Issue } = models;
+    const page = parseInt(query.page);
+    const limit = parseInt(query.limit);
+    const skipIndex = (page - 1) * limit;
+    return await Issue.find(query, queryOps)
+      .sort({ _id: 1 })
+      .limit(limit)
+      .skip(skipIndex)
+      .sort({ endDate: 'asc' })
+      .exec();
+  } catch (err) {
+    console.log('Error getting issue data from db: ', err);
+  }
+};

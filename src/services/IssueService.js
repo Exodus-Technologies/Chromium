@@ -9,6 +9,7 @@ import {
   copyS3Object,
   getObjectUrlFromS3
 } from '../aws';
+import { DEFAULT_MIME_TYPE } from '../constants';
 import {
   createIssue,
   updateIssueViews,
@@ -27,7 +28,7 @@ function isEmpty(obj) {
 }
 
 function removeSpaces(str) {
-  return str.replace(/\s+/g, '');
+  return str && str.replace(/\s+/g, '');
 }
 
 exports.getPayloadFromRequest = async req => {
@@ -38,8 +39,8 @@ exports.getPayloadFromRequest = async req => {
       }
       const file = { ...fields, key: removeSpaces(fields.title) };
       if (!isEmpty(files)) {
-        const { filepath } = files['file'];
-        resolve({ ...file, filepath });
+        const { filepath, mimetype } = files['file'];
+        resolve({ ...file, filepath, mimetype });
       } else {
         resolve(file);
       }
@@ -84,9 +85,12 @@ exports.getIssueById = async issueId => {
 
 exports.createIssue = async archive => {
   try {
-    const { title, author, description, filepath, key } = archive;
+    const { title, author, description, filepath, key, mimetype } = archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
+    }
+    if (filepath && mimetype !== DEFAULT_MIME_TYPE) {
+      return badRequest('File must be a file with a pdf extention.');
     }
     if (description && description.length > 255) {
       return badRequest(
