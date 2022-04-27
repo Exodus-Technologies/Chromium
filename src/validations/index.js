@@ -52,7 +52,13 @@ const issueIdBodyValidation = [
 ];
 
 const subscriptionPostBodyValidation = [
-  body('amount').isNumeric().withMessage('Must provide a price amount paid.'),
+  body('userId').isNumeric().withMessage('Must provide a valid userId.')
+];
+
+const subscriptionPutBodyValidation = [
+  body('startDate')
+    .isString()
+    .withMessage('Must provide a valid startDate for subscription.'),
   body('userId').isNumeric().withMessage('Must provide a valid userId.')
 ];
 
@@ -62,5 +68,6 @@ export {
   issueIdParamValidation,
   issueIdBodyValidation,
   subscriptionQueryValidation,
-  subscriptionPostBodyValidation
+  subscriptionPostBodyValidation,
+  subscriptionPutBodyValidation
 };
