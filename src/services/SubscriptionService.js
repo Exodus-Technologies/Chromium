@@ -1,4 +1,8 @@
-import { getSubscriptions, createSubscription } from '../mongodb';
+import {
+  getSubscriptions,
+  createSubscription,
+  updateSubscription
+} from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
 exports.getSubscriptions = async query => {
@@ -28,6 +32,25 @@ exports.createSubscription = async payload => {
         200,
         {
           message: 'Successful creation of subscription.',
+          subscription
+        }
+      ];
+    }
+    return badRequest(error.message);
+  } catch (err) {
+    console.log('Error creating subscription: ', err);
+    return badImplementationRequest('Error creating subscription.');
+  }
+};
+
+exports.updateSubscription = async payload => {
+  try {
+    const [error, subscription] = await updateSubscription(payload);
+    if (subscription) {
+      return [
+        200,
+        {
+          message: 'Successful update of subscription.',
           subscription
         }
       ];

@@ -4,7 +4,8 @@ const { Router } = express;
 import { SubscriptionController } from '../controllers';
 import {
   subscriptionQueryValidation,
-  subscriptionPostBodyValidation
+  subscriptionPostBodyValidation,
+  subscriptionPutBodyValidation
 } from '../validations';
 import { validationHandler } from '../middlewares';
 
@@ -24,11 +25,12 @@ router.post(
   SubscriptionController.createSubscription
 );
 
-//Update endDate based on current year
-// router.put(
-//   '/issue-service/updateSubscription',
-//   SubscriptionController.updateSubscription
-// );
+router.put(
+  '/issue-service/updateSubscription',
+  subscriptionPutBodyValidation,
+  validationHandler,
+  SubscriptionController.updateSubscription
+);
 
 //Get remaining time in months and days of subscriptio
 // router.get(

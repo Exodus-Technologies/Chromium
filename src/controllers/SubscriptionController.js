@@ -27,3 +27,16 @@ exports.createSubscription = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updateSubscription = async (req, res, next) => {
+  try {
+    const { body } = req;
+    const [statusCode, response] = await SubscriptionService.updateSubscription(
+      body
+    );
+    res.status(statusCode).send(response);
+  } catch (err) {
+    console.log(`Error with getting subscriptions: `, err);
+    next(err);
+  }
+};

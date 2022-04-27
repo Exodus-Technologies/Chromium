@@ -3,7 +3,11 @@
 import config from '../config';
 import models from '../models';
 import { DEFAULT_SUBSCRIPTION_TYPE } from '../constants';
-import { createMoment } from '../utilities';
+import {
+  createMoment,
+  getSubscriptionStartDate,
+  getSubscriptionEndDate
+} from '../utilities';
 
 const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
 
@@ -133,7 +137,7 @@ export const createSubscription = async payload => {
   try {
     const { Subscription } = models;
     const { userId } = payload;
-    const subscription = await Subscription.find({
+    const subscriptions = await Subscription.find({
       userId,
       type: DEFAULT_SUBSCRIPTION_TYPE
     })
@@ -141,8 +145,14 @@ export const createSubscription = async payload => {
         endDate: 'desc'
       })
       .limit(1);
-    if (!subscription) {
-      const subscription = new Subscription(payload);
+    if (!subscriptions.length) {
+      const body = {
+        ...payload,
+        startDate: payload.startDate || getSubscriptionStartDate(),
+        endDate: payload.endDate || getSubscriptionEndDate(),
+        purchaseDate: payload.purchaseDate || getSubscriptionStartDate()
+      };
+      const subscription = new Subscription(body);
       const createdSubscription = await subscription.save();
       const {
         startDate,
@@ -169,5 +179,39 @@ export const createSubscription = async payload => {
     return [new Error('Subscription is still active for the current year')];
   } catch (err) {
     console.log('Error saving subscription data to db: ', err);
+  }
+};
+
+export const updateSubscription = async payload => {
+  try {
+    const { Subscription } = models;
+    const { userId, startDate } = payload;
+    const subscriptions = await Subscription.find({
+      userId,
+      type: DEFAULT_SUBSCRIPTION_TYPE
+    })
+      .sort({
+        endDate: 'desc'
+      })
+      .limit(1);
+
+    if (subscriptions) {
+      const subscription = subscriptions[0];
+      const filter = { subscriptionId: subscription.subscriptionId };
+      const options = { upsert: true, new: true };
+      const update = {
+        ...payload,
+        endDate: getSubscriptionEndDate(startDate)
+      };
+      const updatedSubscription = await Subscription.findOneAndUpdate(
+        filter,
+        update,
+        options
+      );
+      return [null, updatedSubscription];
+    }
+    return [new Error('No subscriptions to update')];
+  } catch (err) {
+    console.log('Error updating subscription data to db: ', err);
   }
 };
