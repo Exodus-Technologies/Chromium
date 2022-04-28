@@ -55,6 +55,10 @@ const subscriptionPostBodyValidation = [
   body('userId').isNumeric().withMessage('Must provide a valid userId.')
 ];
 
+const subscriptionStatusQueryValidation = [
+  query('userId').isString().withMessage('Must provide a valid userId.')
+];
+
 const subscriptionPutBodyValidation = [
   body('startDate')
     .isString()
@@ -69,5 +73,6 @@ export {
   issueIdBodyValidation,
   subscriptionQueryValidation,
   subscriptionPostBodyValidation,
-  subscriptionPutBodyValidation
+  subscriptionPutBodyValidation,
+  subscriptionStatusQueryValidation
 };

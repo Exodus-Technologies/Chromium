@@ -19,8 +19,12 @@ export const getSubscriptionEndDate = (date = new Date()) => {
   return moment(date).utc().set(momentObj).format(DEFAULT_TIME_FORMAT);
 };
 
-export const createMoment = date => {
+export const createMoment = (date = new Date()) => {
   return moment(date);
+};
+
+export const createFormattedDate = (date = new Date()) => {
+  return moment(date).format(DEFAULT_TIME_FORMAT);
 };
 
 export const createSubscriptionId = () => {

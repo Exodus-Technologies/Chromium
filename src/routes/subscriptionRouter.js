@@ -5,7 +5,8 @@ import { SubscriptionController } from '../controllers';
 import {
   subscriptionQueryValidation,
   subscriptionPostBodyValidation,
-  subscriptionPutBodyValidation
+  subscriptionPutBodyValidation,
+  subscriptionStatusQueryValidation
 } from '../validations';
 import { validationHandler } from '../middlewares';
 
@@ -32,10 +33,11 @@ router.put(
   SubscriptionController.updateSubscription
 );
 
-//Get remaining time in months and days of subscriptio
-// router.get(
-//   '/issue-service/getSubscriptionStatus',
-//   SubscriptionController.getSubscriptionStatus
-// );
+router.get(
+  '/issue-service/getSubscriptionStatus',
+  subscriptionStatusQueryValidation,
+  validationHandler,
+  SubscriptionController.getSubscriptionStatus
+);
 
 export default router;
