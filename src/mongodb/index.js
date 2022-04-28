@@ -6,7 +6,8 @@ import { DEFAULT_SUBSCRIPTION_TYPE } from '../constants';
 import {
   createMoment,
   getSubscriptionStartDate,
-  getSubscriptionEndDate
+  getSubscriptionEndDate,
+  createFormattedDate
 } from '../utilities';
 
 const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
@@ -148,10 +149,17 @@ export const createSubscription = async payload => {
     if (!subscriptions.length) {
       const body = {
         ...payload,
-        startDate: payload.startDate || getSubscriptionStartDate(),
-        endDate: payload.endDate || getSubscriptionEndDate(),
-        purchaseDate: payload.purchaseDate || getSubscriptionStartDate()
+        startDate: payload.startDate
+          ? createFormattedDate(payload.startDate)
+          : getSubscriptionStartDate(),
+        endDate: payload.endDate
+          ? createFormattedDate(payload.endDate)
+          : getSubscriptionEndDate(),
+        purchaseDate: payload.purchaseDate
+          ? createFormattedDate(payload.purchaseDate)
+          : getSubscriptionStartDate()
       };
+
       const subscription = new Subscription(body);
       const createdSubscription = await subscription.save();
       const {
@@ -213,5 +221,34 @@ export const updateSubscription = async payload => {
     return [new Error('No subscriptions to update')];
   } catch (err) {
     console.log('Error updating subscription data to db: ', err);
+  }
+};
+
+export const getSubscriptionStatus = async query => {
+  try {
+    const { Subscription } = models;
+    const { userId } = query;
+    const subscriptions = await Subscription.find({
+      userId,
+      type: DEFAULT_SUBSCRIPTION_TYPE
+    })
+      .sort({
+        endDate: 'desc'
+      })
+      .limit(1);
+    if (subscriptions.length) {
+      const subscription = subscriptions[0];
+      const endDate = createMoment(subscription.endDate);
+      const currentDate = createMoment();
+      const diffInMonths = endDate.diff(currentDate, 'months');
+      if (Math.sign(diffInMonths) > 0) {
+        return [`Subscription ends in ${diffInMonths} months.`];
+      } else {
+        return [`Subscription expired ${diffInMonths} months ago.`];
+      }
+    }
+    return [''];
+  } catch (err) {
+    console.log('Error saving subscription data to db: ', err);
   }
 };

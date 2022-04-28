@@ -1,7 +1,8 @@
 import {
   getSubscriptions,
   createSubscription,
-  updateSubscription
+  updateSubscription,
+  getSubscriptionStatus
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
@@ -59,5 +60,24 @@ exports.updateSubscription = async payload => {
   } catch (err) {
     console.log('Error creating subscription: ', err);
     return badImplementationRequest('Error creating subscription.');
+  }
+};
+
+exports.getSubscriptionStatus = async query => {
+  try {
+    const [message] = await getSubscriptionStatus(query);
+    if (message) {
+      return [
+        200,
+        {
+          subscriptionStatus: message
+        }
+      ];
+    }
+  } catch (err) {
+    console.log('Error getting remaining time on subscription: ', err);
+    return badImplementationRequest(
+      'Error getting remaining time on subscription.'
+    );
   }
 };
