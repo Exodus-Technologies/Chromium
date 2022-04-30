@@ -123,7 +123,10 @@ export const getSubscriptions = async query => {
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
     const skipIndex = (page - 1) * limit;
-    return await Subscription.find(query, queryOps)
+    return await Subscription.find(
+      { ...query, type: DEFAULT_SUBSCRIPTION_TYPE },
+      queryOps
+    )
       .sort({ _id: 1 })
       .limit(limit)
       .skip(skipIndex)
