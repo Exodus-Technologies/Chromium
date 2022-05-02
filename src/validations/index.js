@@ -30,6 +30,14 @@ const issueQueryValidation = [
     .optional()
 ];
 
+const issueIdParamValidation = [
+  param('issueId').isString().withMessage('Must provide an id for a issue.')
+];
+
+const issueIdBodyValidation = [
+  body('issueId').isString().withMessage('Must provide an existing issue id.')
+];
+
 const subscriptionQueryValidation = [
   query('page')
     .isString()
@@ -41,14 +49,6 @@ const subscriptionQueryValidation = [
     .not()
     .isEmpty()
     .withMessage('Must provide a limit for issues.')
-];
-
-const issueIdParamValidation = [
-  param('issueId').isString().withMessage('Must provide an id for a issue.')
-];
-
-const issueIdBodyValidation = [
-  body('issueId').isString().withMessage('Must provide an existing issue id.')
 ];
 
 const subscriptionPostBodyValidation = [
