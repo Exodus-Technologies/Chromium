@@ -92,6 +92,19 @@ exports.createIssue = async archive => {
     if (filepath && mimetype !== DEFAULT_MIME_TYPE) {
       return badRequest('File must be a file with a pdf extention.');
     }
+    if (!title) {
+      return badRequest('Must have file title associated with file upload.');
+    }
+    if (!description) {
+      return badRequest(
+        'Must have file description associated with file upload.'
+      );
+    }
+    if (!author) {
+      return badRequest(
+        'Must have author of file associated with file upload.'
+      );
+    }
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -149,7 +162,7 @@ exports.updateIssue = async archive => {
           url: s3Location
         };
         await updateIssue(body);
-        await deleteIssueByKey(issue.key);
+        deleteIssueByKey(issue.key);
         return [
           200,
           {
@@ -172,7 +185,7 @@ exports.updateIssue = async archive => {
         if (isBucketAvaiable) {
           const s3Object = await doesS3ObjectExist(newKey);
           if (s3Object) {
-            await deleteIssueByKey(newKey);
+            deleteIssueByKey(newKey);
           }
           const s3Location = await uploadArchiveToS3Location(archive);
           const body = {
