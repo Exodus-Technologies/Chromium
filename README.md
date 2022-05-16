@@ -2,6 +2,8 @@
 
 Microservice for all interactions for creating, retrieving, updating, and deleting pdf issues for customers of Sheen magazine (Issue Manager)
 
+
+
 # Requirements
 
 For development, you will only need Node.js and a node global package (NPM) installed in your
