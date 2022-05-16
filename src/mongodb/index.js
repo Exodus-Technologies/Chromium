@@ -35,7 +35,7 @@ export const getIssues = async query => {
 
     const filter = [];
     for (const [key, value] of Object.entries(query)) {
-      if (key != 'page' && key != 'limit') {
+      if (key != 'page' && key != 'limit' && key != 'sort') {
         filter.push({ [key]: { $regex: value, $options: 'i' } });
       }
     }
