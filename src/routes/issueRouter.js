@@ -45,4 +45,5 @@ router.delete(
   IssueController.deleteIssueById
 );
 
+router.get('/issue-service/getTotal', IssueController.getTotal);
 export default router;
