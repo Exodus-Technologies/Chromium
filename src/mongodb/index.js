@@ -287,7 +287,7 @@ export const getSubscriptionStatus = async query => {
         endDateResult = currentDate; 
       }
     }
-    return [{subscriptionStatus: subscriptionStatusText, endDate: endDateResult}];
+    return [{subscriptionStatus: subscriptionStatusText, endDate: endDateResult.format("YYYY-MM-DD")}];
   } catch (err) {
     console.log('Error saving subscription data to db: ', err);
   }
