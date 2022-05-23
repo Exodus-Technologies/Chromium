@@ -272,18 +272,22 @@ export const getSubscriptionStatus = async query => {
         endDate: 'desc'
       })
       .limit(1);
+      let subscriptionStatusText = ''; 
+      let endDateResult = createMoment(); 
     if (subscriptions.length) {
       const subscription = subscriptions[0];
       const endDate = createMoment(subscription.endDate);
       const currentDate = createMoment();
       const diffInMonths = endDate.diff(currentDate, 'months');
       if (Math.sign(diffInMonths) > 0) {
-        return [`Subscription ends in ${diffInMonths} months.`];
+        subscriptionStatusText = `Subscription ends in ${diffInMonths} months.`; 
+        endDateResult = endDate; 
       } else {
-        return [`Subscription expired ${diffInMonths} months ago.`];
+        subscriptionStatusText = `Subscription expired ${diffInMonths} months ago.`; 
+        endDateResult = currentDate; 
       }
     }
-    return [''];
+    return [{subscriptionStatus: subscriptionStatusText, endDate: endDateResult}];
   } catch (err) {
     console.log('Error saving subscription data to db: ', err);
   }

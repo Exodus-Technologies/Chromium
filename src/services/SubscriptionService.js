@@ -65,13 +65,11 @@ exports.updateSubscription = async payload => {
 
 exports.getSubscriptionStatus = async query => {
   try {
-    const [message] = await getSubscriptionStatus(query);
-    if (message) {
+    const [subscriptionStatusObject] = await getSubscriptionStatus(query);
+    if (subscriptionStatusObject) {
       return [
         200,
-        {
-          subscriptionStatus: message
-        }
+        subscriptionStatusObject
       ];
     }
   } catch (err) {
