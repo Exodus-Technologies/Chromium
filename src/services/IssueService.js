@@ -45,6 +45,12 @@ exports.getPayloadFromRequest = async req => {
         resolve(file);
       }
     });
+    form.on('error', err => {
+      console.log('Error on form parse: ', err);
+    });
+    form.on('end', () => {
+      console.log('Form is finished processing.');
+    });
   });
 };
 
