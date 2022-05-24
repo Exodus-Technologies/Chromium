@@ -22,8 +22,6 @@ import {
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
-const form = formidable({ multiples: true });
-
 function isEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
@@ -33,6 +31,7 @@ function removeSpaces(str) {
 }
 
 exports.getPayloadFromRequest = async req => {
+  const form = formidable({ multiples: true });
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
