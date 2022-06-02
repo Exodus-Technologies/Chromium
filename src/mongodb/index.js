@@ -9,6 +9,7 @@ import {
   getSubscriptionEndDate,
   createFormattedDate
 } from '../utilities';
+import mongoose from 'mongoose';
 
 const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
 
@@ -155,18 +156,55 @@ export const getSubscriptions = async query => {
     const { Subscription } = models;
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
+    const sort = query.sort || '-startDate';
     const skipIndex = (page - 1) * limit;
-    return await Subscription.find(
-      { ...query, type: DEFAULT_SUBSCRIPTION_TYPE },
-      queryOps
-    )
-      .sort({ _id: 1 })
-      .limit(limit)
-      .skip(skipIndex)
-      .sort({ endDate: 'asc' })
+
+    const match = {
+      type: DEFAULT_SUBSCRIPTION_TYPE
+    };
+
+    if (query.userId) {
+      match.userId = +query.userId;
+    }
+
+    if (query._id) {
+      match._id = mongoose.Types.ObjectId(query._id);
+    }
+
+    const aggregate = [
+      {
+        $match: match
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: 'userId',
+          as: 'user'
+        }
+      },
+      {
+        $unwind: {
+          path: '$user',
+          preserveNullAndEmptyArrays: true
+        }
+      }
+    ];
+    const total = await Subscription.countDocuments(match).exec();
+    const items = await Subscription.aggregate([
+      ...aggregate,
+      {
+        $skip: skipIndex
+      },
+      {
+        $limit: limit
+      }
+    ])
+      .sort(sort)
       .exec();
+    return { items, total };
   } catch (err) {
-    console.log('Error getting issue data from db: ', err);
+    console.log('Error getting subscription data from db: ', err);
   }
 };
 
@@ -272,22 +310,27 @@ export const getSubscriptionStatus = async query => {
         endDate: 'desc'
       })
       .limit(1);
-      let subscriptionStatusText = ''; 
-      let endDateResult = createMoment(); 
+    let subscriptionStatusText = '';
+    let endDateResult = createMoment();
     if (subscriptions.length) {
       const subscription = subscriptions[0];
       const endDate = createMoment(subscription.endDate);
       const currentDate = createMoment();
       const diffInMonths = endDate.diff(currentDate, 'months');
       if (Math.sign(diffInMonths) > 0) {
-        subscriptionStatusText = `Subscription ends in ${diffInMonths} months.`; 
-        endDateResult = endDate; 
+        subscriptionStatusText = `Subscription ends in ${diffInMonths} months.`;
+        endDateResult = endDate;
       } else {
-        subscriptionStatusText = `Subscription expired ${diffInMonths} months ago.`; 
-        endDateResult = currentDate; 
+        subscriptionStatusText = `Subscription expired ${diffInMonths} months ago.`;
+        endDateResult = currentDate;
       }
     }
-    return [{subscriptionStatus: subscriptionStatusText, endDate: endDateResult.format("YYYY-MM-DD")}];
+    return [
+      {
+        subscriptionStatus: subscriptionStatusText,
+        endDate: endDateResult.format('YYYY-MM-DD')
+      }
+    ];
   } catch (err) {
     console.log('Error saving subscription data to db: ', err);
   }

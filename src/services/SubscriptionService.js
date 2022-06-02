@@ -14,7 +14,8 @@ exports.getSubscriptions = async query => {
         200,
         {
           message: 'Successful fetch for subscription with query params.',
-          subscriptions
+          subscriptions: subscriptions.items,
+          total: subscriptions.total
         }
       ];
     }
@@ -67,10 +68,7 @@ exports.getSubscriptionStatus = async query => {
   try {
     const [subscriptionStatusObject] = await getSubscriptionStatus(query);
     if (subscriptionStatusObject) {
-      return [
-        200,
-        subscriptionStatusObject
-      ];
+      return [200, subscriptionStatusObject];
     }
   } catch (err) {
     console.log('Error getting remaining time on subscription: ', err);
