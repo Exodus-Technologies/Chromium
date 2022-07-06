@@ -9,7 +9,11 @@ import {
   copyS3Object,
   getObjectUrlFromS3
 } from '../aws';
-import { DEFAULT_MIME_TYPE } from '../constants';
+import {
+  COVERIMAGE_MIME_TYPE,
+  ISSUE_MIME_TYPE,
+  MAX_FILE_SIZE
+} from '../constants';
 import {
   createIssue,
   updateIssueViews,
@@ -30,16 +34,25 @@ function removeSpaces(str) {
 }
 
 exports.getPayloadFromRequest = async req => {
-  const form = formidable({ multiples: true });
+  const form = formidable({ multiples: true, maxFileSize: MAX_FILE_SIZE });
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
         reject(err);
       }
+      if (isEmpty(fields)) reject('Form is empty.');
       const file = { ...fields, key: removeSpaces(fields.title) };
       if (!isEmpty(files)) {
-        const { filepath, mimetype } = files['file'];
-        resolve({ ...file, filepath, mimetype });
+        const { filepath: issuePath, mimetype: issueType } = files['file'];
+        const { filepath: coverImagePath, mimetype: coverImageType } =
+          files['coverImage'];
+        resolve({
+          ...file,
+          issuePath,
+          issueType,
+          coverImagePath,
+          coverImageType
+        });
       } else {
         resolve(file);
       }
@@ -90,12 +103,29 @@ exports.getIssueById = async issueId => {
 
 exports.createIssue = async archive => {
   try {
-    const { title, author, description, filepath, key, mimetype } = archive;
-    if (!filepath) {
+    const {
+      title,
+      author,
+      description,
+      key,
+      issuePath,
+      issueType,
+      coverImagePath,
+      coverImageType,
+      categories,
+      avaiableForSale
+    } = archive;
+    if (!issuePath) {
       return badRequest('File must be provided to upload.');
     }
-    if (filepath && mimetype !== DEFAULT_MIME_TYPE) {
+    if (issuePath && issueType !== ISSUE_MIME_TYPE) {
       return badRequest('File must be a file with a pdf extention.');
+    }
+    if (!coverImagePath) {
+      return badRequest('Cover image must be provided to upload.');
+    }
+    if (coverImagePath && coverImageType !== COVERIMAGE_MIME_TYPE) {
+      return badRequest('File must be a file with a image extension.');
     }
     if (!title) {
       return badRequest('Must have file title associated with file upload.');
@@ -123,13 +153,20 @@ exports.createIssue = async archive => {
     } else {
       const isBucketAvaiable = await doesS3BucketExist();
       if (isBucketAvaiable) {
-        const s3Location = await uploadArchiveToS3Location(archive);
+        const { issueLocation, coverImageLocation } =
+          await uploadArchiveToS3Location(archive);
+
         const body = {
           title,
           author,
           description,
           key,
-          url: s3Location
+          ...(categories && {
+            categories: categories.split(',').map(item => item.trim())
+          }),
+          avaiableForSale,
+          url: issueLocation,
+          coverImage: coverImageLocation
         };
         const savedIssue = await createIssue(body);
         return [
@@ -183,7 +220,7 @@ exports.updateIssue = async archive => {
         ];
       }
       if (filepath) {
-        if (mimetype !== DEFAULT_MIME_TYPE) {
+        if (mimetype !== ISSUE_MIME_TYPE) {
           return badRequest('File must be a file with a pdf extention.');
         }
         const isBucketAvaiable = await doesS3BucketExist();

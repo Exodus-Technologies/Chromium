@@ -13,11 +13,14 @@ const { NODE_ENV } = config;
 const issueSchema = new Schema(
   {
     title: { type: String, required: true },
+    author: { type: String, required: true },
     url: { type: String, required: true },
     description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
-    author: { type: String, required: true },
-    key: { type: String, required: true }
+    key: { type: String, required: true },
+    avaiableForSale: { type: Boolean, default: false },
+    coverImage: { type: String },
+    categories: { type: [String], required: true }
   },
   { timestamps: true }
 );
