@@ -27,15 +27,38 @@ export const getIssues = async query => {
           })
           .limit(1)
       : null;
-    const issues = await Issue.find(query, queryOps)
-      .sort({ _id: 1 })
+
+    const filter = [];
+    for (const [key, value] of Object.entries(query)) {
+      if (key != 'page' && key != 'limit' && key != 'sort') {
+        filter.push({ [key]: { $regex: value, $options: 'i' } });
+      }
+    }
+
+    let objectFilter = {};
+    if (filter.length > 0) {
+      objectFilter = {
+        $and: filter
+      };
+    }
+
+    let sortString = '-id';
+
+    if (query.sort) {
+      sortString = query.sort;
+    }
+
+    const issues = await Issue.find(objectFilter, queryOps)
       .limit(limit)
       .skip(skipIndex)
-      .sort({ createdAt: 'desc' })
+      .sort(sortString)
       .lean()
       .exec();
+    const total = await Issue.find(objectFilter, queryOps).count();
     return issues.map(issue => ({
       ...issue,
+      total,
+      pages: Math.ceil(total / limit),
       paid:
         subscriptions && subscriptions.length
           ? createMoment(issue.createdAt).isBefore(
@@ -45,6 +68,16 @@ export const getIssues = async query => {
     }));
   } catch (err) {
     console.log('Error getting issue data from db: ', err);
+  }
+};
+
+export const getTotal = async () => {
+  try {
+    const { Issue } = models;
+    const total = await Issue.count();
+    return total;
+  } catch (err) {
+    console.log('Error getting total issue data from db: ', err);
   }
 };
 

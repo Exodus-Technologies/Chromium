@@ -21,7 +21,8 @@ import {
   deleteIssueById,
   getIssueByTitle,
   updateIssue,
-  getIssues
+  getIssues,
+  getTotal
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
@@ -320,5 +321,24 @@ exports.deleteIssueById = async issueId => {
   } catch (err) {
     console.log('Error deleting issue by id: ', err);
     return badImplementationRequest('Error deleting issue by id.');
+  }
+};
+
+exports.getTotal = async query => {
+  try {
+    const issues = await getTotal(query);
+    if (issues) {
+      return [
+        200,
+        {
+          message: 'Successful fetch for get total video with query params.',
+          total_issue: issues
+        }
+      ];
+    }
+    return badRequest(`No issue found with selected query params.`);
+  } catch (err) {
+    console.log('Error getting all issues: ', err);
+    return badImplementationRequest('Error getting issues.');
   }
 };

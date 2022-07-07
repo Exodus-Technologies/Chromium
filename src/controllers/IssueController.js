@@ -67,3 +67,14 @@ exports.deleteIssueById = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getTotal = async (req, res, next) => {
+  try {
+    const { query } = req;
+    const [statusCode, response] = await IssueService.getTotal(query);
+    res.status(statusCode).send(response);
+  } catch (err) {
+    console.log(`Error with getting issues: `, err);
+    next(err);
+  }
+};
