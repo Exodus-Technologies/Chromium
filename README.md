@@ -65,7 +65,8 @@ Chromium utilizes dotenv[https://github.com/motdotla/dotenv] for environment var
 - AWS_ACCESS_KEY_ID (AWS access key)
 - AWS_SECRET_ACCESS_KEY (AWS secret access key)
 - AWS_REGION (AWS region)
-- S3_BUCKET_NAME (AWS S3 bucket name or key)
+- S3_ISSUE_BUCKET_NAME (bucket for issue pdfs)
+- S3_COVERIMAGE_BUCKET_NAME (bucket for coverImages)
 
 # Running the project (development mode)
 
