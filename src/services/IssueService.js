@@ -7,7 +7,12 @@ import {
   doesS3ObjectExist,
   deleteIssueByKey,
   copyS3Object,
-  getObjectUrlFromS3
+  getObjectUrlFromS3,
+  doesIssueS3BucketExist,
+  createCoverImageS3Bucket,
+  createIssueS3Bucket,
+  doesCoverImageS3BucketExist,
+  deleteCoverImageByKey
 } from '../aws';
 import {
   COVERIMAGE_MIME_TYPE,
@@ -152,8 +157,12 @@ exports.createIssue = async archive => {
         `Issue with the title ${title} provide already exists.`
       );
     } else {
-      const isBucketAvaiable = await doesS3BucketExist();
-      if (isBucketAvaiable) {
+      const isIssueBucketAvaiable = await doesIssueS3BucketExist();
+      const isCoverImageBucketAvaiable = await doesCoverImageS3BucketExist();
+      if (!isIssueBucketAvaiable && !isCoverImageBucketAvaiable) {
+        await createIssueS3Bucket();
+        await createCoverImageS3Bucket();
+      } else {
         const { issueLocation, coverImageLocation } =
           await uploadArchiveToS3Location(archive);
 
@@ -312,6 +321,7 @@ exports.deleteIssueById = async issueId => {
     if (issue) {
       const { key } = issue;
       await deleteIssueByKey(key);
+      await deleteCoverImageByKey(key);
       const deletedIssue = await deleteIssueById(issueId);
       if (deletedIssue) {
         return [204];

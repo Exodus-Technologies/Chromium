@@ -7,6 +7,7 @@ import {
   ListBucketsCommand,
   HeadObjectCommand,
   DeleteObjectCommand,
+  CreateBucketCommand,
   CopyObjectCommand
 } from '@aws-sdk/client-s3';
 import config from '../config';
@@ -33,6 +34,50 @@ const s3Client = new S3Client({
   }
 });
 
+export const createIssueS3Bucket = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3IssueBucketName
+      };
+      await s3Client.send(new CreateBucketCommand(params));
+      resolve();
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'createS3Bucket',
+        requestId,
+        cfId,
+        bucketName: s3IssueBucketName,
+        extendedRequestId
+      });
+      reject(err);
+    }
+  });
+};
+
+export const createCoverImageS3Bucket = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3CoverImageBucketName
+      };
+      await s3Client.send(new CreateBucketCommand(params));
+      resolve();
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'createS3Bucket',
+        requestId,
+        cfId,
+        bucketName: s3CoverImageBucketName,
+        extendedRequestId
+      });
+      reject(err);
+    }
+  });
+};
+
 const getFileContentFromPath = path => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -50,7 +95,7 @@ const getFileContentFromPath = path => {
   });
 };
 
-export const doesS3BucketExist = () => {
+export const doesIssueS3BucketExist = () => {
   return new Promise(async (resolve, reject) => {
     try {
       const { Buckets } = await s3Client.send(new ListBucketsCommand({}));
@@ -62,6 +107,29 @@ export const doesS3BucketExist = () => {
         message: 'doesS3BucketExist',
         requestId,
         cfId,
+        bucketName: s3IssueBucketName,
+        extendedRequestId
+      });
+      reject(err);
+    }
+  });
+};
+
+export const doesCoverImageS3BucketExist = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { Buckets } = await s3Client.send(new ListBucketsCommand({}));
+      const bucket = Buckets.some(
+        bucket => bucket.Name === s3CoverImageBucketName
+      );
+      resolve(bucket);
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'doesS3BucketExist',
+        requestId,
+        cfId,
+        bucketName: s3CoverImageBucketName,
         extendedRequestId
       });
       reject(err);
@@ -137,6 +205,7 @@ export const deleteIssueByKey = key => {
         message: 'deleteIssueByKey',
         requestId,
         cfId,
+        key,
         extendedRequestId
       });
       reject(err);
@@ -159,6 +228,7 @@ export const deleteCoverImageByKey = key => {
         message: 'deleteCoverImageByKey',
         requestId,
         cfId,
+        key,
         extendedRequestId
       });
       reject(err);
@@ -193,7 +263,7 @@ const uploadCoverImageToS3 = (fileContent, key) => {
     // Setting up S3 upload parameters
     const params = {
       Bucket: s3CoverImageBucketName,
-      Key: `${key}.${DEFAULT_PDF_FILE_EXTENTION}`, // File name you want to save as in S3
+      Key: `${key}.${DEFAULT_COVERIMAGE_FILE_EXTENTION}`, // File name you want to save as in S3
       Body: fileContent,
       ACL: 'public-read'
     };
