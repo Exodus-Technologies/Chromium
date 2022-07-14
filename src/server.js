@@ -5,9 +5,10 @@ import express from 'express';
 import compression from 'compression';
 import helmet from 'helmet';
 import noCache from 'nocache';
+import cors from 'cors';
 import responseTime from 'response-time';
 
-import { requestResponse, errorHandler, cors } from './middlewares';
+import { requestResponse, errorHandler } from './middlewares';
 import { appRouter, issueRouter } from './routes';
 
 // Create the Express application object
@@ -17,7 +18,7 @@ const server = express();
 server.set('trust proxy', true);
 
 //Cors middleware
-server.use(cors);
+server.use(cors());
 console.log('CORS enabled.');
 
 //Helmet middleware
