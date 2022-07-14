@@ -50,4 +50,13 @@ const validationHandler = (req, res, next) => {
   next();
 };
 
-export { requestResponse, errorHandler, cache, validationHandler };
+const cors = (_, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  );
+  next();
+};
+
+export { requestResponse, errorHandler, cache, validationHandler, cors };
