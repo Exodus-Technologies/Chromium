@@ -13,9 +13,7 @@ const { NODE_ENV } = config;
 const issueSchema = new Schema(
   {
     title: { type: String, required: true },
-    author: { type: String, required: true },
     url: { type: String, required: true },
-    description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     key: { type: String, required: true },
     avaiableForSale: { type: Boolean, default: false },
