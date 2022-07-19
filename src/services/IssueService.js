@@ -111,8 +111,6 @@ exports.createIssue = async archive => {
   try {
     const {
       title,
-      author,
-      description,
       key,
       issuePath,
       issueType,
@@ -136,21 +134,6 @@ exports.createIssue = async archive => {
     if (!title) {
       return badRequest('Must have file title associated with file upload.');
     }
-    if (!description) {
-      return badRequest(
-        'Must have file description associated with file upload.'
-      );
-    }
-    if (!author) {
-      return badRequest(
-        'Must have author of file associated with file upload.'
-      );
-    }
-    if (description && description.length > 255) {
-      return badRequest(
-        'Description must be provided and less than 255 characters long.'
-      );
-    }
     const issue = await getIssueByTitle(title);
     if (issue) {
       return badRequest(
@@ -168,8 +151,6 @@ exports.createIssue = async archive => {
 
         const body = {
           title,
-          author,
-          description,
           key,
           ...(categories && {
             categories: categories.split(',').map(item => item.trim())
@@ -193,7 +174,7 @@ exports.createIssue = async archive => {
 
 exports.updateIssue = async archive => {
   try {
-    const { title, filepath, issueId, description, author, mimetype } = archive;
+    const { title, filepath, issueId, mimetype } = archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -208,8 +189,6 @@ exports.updateIssue = async archive => {
         const body = {
           title,
           issueId,
-          description,
-          author,
           key: newKey,
           url: s3Location
         };
@@ -222,8 +201,6 @@ exports.updateIssue = async archive => {
             issue: {
               title,
               issueId,
-              description,
-              author,
               url: s3Location
             }
           }
@@ -243,9 +220,7 @@ exports.updateIssue = async archive => {
           const body = {
             title,
             issueId,
-            description,
             key: newKey,
-            author,
             url: s3Location
           };
           await updateIssue(body);
@@ -256,8 +231,6 @@ exports.updateIssue = async archive => {
               issue: {
                 title,
                 issueId,
-                description,
-                author,
                 url: s3Location
               }
             }
@@ -268,8 +241,6 @@ exports.updateIssue = async archive => {
         const body = {
           title,
           issueId,
-          description,
-          author,
           url
         };
         await updateIssue(body);
@@ -280,8 +251,6 @@ exports.updateIssue = async archive => {
             issue: {
               title,
               issueId,
-              description,
-              author,
               url
             }
           }
