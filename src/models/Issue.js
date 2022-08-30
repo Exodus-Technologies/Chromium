@@ -1,22 +1,23 @@
 'use strict';
 
 import mongoose from 'mongoose';
-import mongooseSequence from 'mongoose-sequence';
 import config from '../config';
+import { createIssueId } from '../utilities';
 
 const { Schema } = mongoose;
-const autoIncrement = mongooseSequence(mongoose);
 const { NODE_ENV } = config;
 
 //ISSUE SCHEMA
 //  ============================================
 const issueSchema = new Schema(
   {
+    issueId: { type: String, default: createIssueId() },
     title: { type: String, required: true },
     url: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     key: { type: String, required: true },
-    avaiableForSale: { type: Boolean, default: false },
+    availableForSale: { type: Boolean, default: true },
+    price: { type: Number, default: 0 },
     coverImage: { type: String },
     categories: { type: [String], required: true }
   },
@@ -27,11 +28,6 @@ const issueSchema = new Schema(
  * Set the autoCreate option on models if not on production
  */
 issueSchema.set('autoCreate', NODE_ENV !== 'production');
-
-/**
- * Increments issueId everytime an instances is created
- */
-issueSchema.plugin(autoIncrement, { inc_field: 'issueId' });
 
 /**
  * Create Issue model out of issueSchema

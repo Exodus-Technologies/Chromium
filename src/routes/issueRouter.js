@@ -20,6 +20,8 @@ router.get(
   IssueController.getIssues
 );
 
+router.get('/issue-service/getTotal', IssueController.getTotal);
+
 router.get(
   '/issue-service/getIssue/:issueId',
   issueIdParamValidation,
@@ -44,7 +46,5 @@ router.delete(
   validationHandler,
   IssueController.deleteIssueById
 );
-
-router.get('/issue-service/getTotal', IssueController.getTotal);
 
 export default router;
