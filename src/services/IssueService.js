@@ -3,7 +3,6 @@
 import formidable from 'formidable';
 import {
   uploadArchiveToS3Location,
-  doesS3BucketExist,
   doesS3ObjectExist,
   deleteIssueByKey,
   copyS3Object,
@@ -112,11 +111,11 @@ exports.createIssue = async archive => {
     const {
       title,
       key,
+      description,
       issuePath,
       issueType,
       coverImagePath,
       coverImageType,
-      categories,
       avaiableForSale
     } = archive;
     if (!issuePath) {
@@ -133,6 +132,11 @@ exports.createIssue = async archive => {
     }
     if (!title) {
       return badRequest('Must have file title associated with file upload.');
+    }
+    if (!description || (description && description.length > 255)) {
+      return badRequest(
+        'Description must be provided and less than 255 characters long.'
+      );
     }
     const issue = await getIssueByTitle(title);
     if (issue) {
@@ -152,17 +156,15 @@ exports.createIssue = async archive => {
         const body = {
           title,
           key,
-          ...(categories && {
-            categories: categories.split(',').map(item => item.trim())
-          }),
           avaiableForSale,
           url: issueLocation,
+          description,
           coverImage: coverImageLocation
         };
-        const savedIssue = await createIssue(body);
+        await createIssue(body);
         return [
           200,
-          { message: 'Issue uploaded to s3 with success', issue: savedIssue }
+          { message: 'Issue uploaded to s3 with success', issue: { ...body } }
         ];
       }
     }
@@ -174,7 +176,15 @@ exports.createIssue = async archive => {
 
 exports.updateIssue = async archive => {
   try {
-    const { title, filepath, issueId, mimetype } = archive;
+    const {
+      title,
+      description,
+      issuePath,
+      issueType,
+      coverImagePath,
+      coverImageType,
+      avaiableForSale
+    } = archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -190,6 +200,8 @@ exports.updateIssue = async archive => {
           title,
           issueId,
           key: newKey,
+          description,
+          avaiableForSale,
           url: s3Location
         };
         await updateIssue(body);
@@ -199,29 +211,29 @@ exports.updateIssue = async archive => {
           {
             message: 'Issue updated in s3 with success',
             issue: {
-              title,
-              issueId,
-              url: s3Location
+              ...body
             }
           }
         ];
       }
-      if (filepath) {
-        if (mimetype !== ISSUE_MIME_TYPE) {
+      if (issuePath) {
+        if (issueType !== ISSUE_MIME_TYPE) {
           return badRequest('File must be a file with a pdf extention.');
         }
-        const isBucketAvaiable = await doesS3BucketExist();
-        if (isBucketAvaiable) {
+        const isIssueBucketAvaiable = await doesIssueS3BucketExist();
+        if (isIssueBucketAvaiable) {
           const s3Object = await doesS3ObjectExist(newKey);
           if (s3Object) {
             deleteIssueByKey(newKey);
           }
-          const s3Location = await uploadArchiveToS3Location(archive);
+          const { issueLocation } = await uploadArchiveToS3Location(archive);
           const body = {
             title,
             issueId,
             key: newKey,
-            url: s3Location
+            description,
+            avaiableForSale,
+            url: issueLocation
           };
           await updateIssue(body);
           return [
@@ -229,9 +241,41 @@ exports.updateIssue = async archive => {
             {
               message: 'Issue uploaded to s3 with success',
               issue: {
-                title,
-                issueId,
-                url: s3Location
+                ...body
+              }
+            }
+          ];
+        }
+      }
+      if (coverImagePath) {
+        if (coverImageType !== COVERIMAGE_MIME_TYPE) {
+          return badRequest('File must be a file with a jpeg extention.');
+        }
+        const isCoverImageBucketAvaiable = await doesCoverImageS3BucketExist();
+        if (isCoverImageBucketAvaiable) {
+          const s3Object = await doesS3ObjectExist(newKey);
+          if (s3Object) {
+            deleteIssueByKey(newKey);
+          }
+          const { coverImageLocation } = await uploadArchiveToS3Location(
+            archive
+          );
+
+          const body = {
+            title,
+            issueId,
+            key: newKey,
+            description,
+            avaiableForSale,
+            coverImage: coverImageLocation
+          };
+          await updateIssue(body);
+          return [
+            200,
+            {
+              message: 'Cover image uploaded to s3 with success',
+              issue: {
+                ...body
               }
             }
           ];
@@ -241,7 +285,9 @@ exports.updateIssue = async archive => {
         const body = {
           title,
           issueId,
-          url
+          url,
+          description,
+          avaiableForSale
         };
         await updateIssue(body);
         return [
@@ -249,9 +295,7 @@ exports.updateIssue = async archive => {
           {
             message: 'Issue updated with success.',
             issue: {
-              title,
-              issueId,
-              url
+              ...body
             }
           }
         ];

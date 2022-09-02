@@ -14,6 +14,7 @@ const issueSchema = new Schema(
     issueId: { type: String, default: createIssueId() },
     title: { type: String, required: true },
     url: { type: String, required: true },
+    description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     key: { type: String, required: true },
     availableForSale: { type: Boolean, default: true },
