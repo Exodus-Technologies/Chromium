@@ -181,14 +181,14 @@ exports.updateIssue = async archive => {
       issueType,
       coverImagePath,
       coverImageType,
-      isPurchased
+      paid
     } = archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
       );
     }
-    if (isPurchased && typeof isPurchased !== 'boolean') {
+    if (paid && typeof paid !== 'boolean') {
       return badRequest('Purchased flag must be provided and a boolean flag.');
     }
     const issue = await getIssueById(issueId);
@@ -203,7 +203,7 @@ exports.updateIssue = async archive => {
           key: newKey,
           description,
           url: s3Location,
-          isPurchased
+          paid
         };
         await updateIssue(body);
         deleteIssueByKey(issue.key);
@@ -234,7 +234,7 @@ exports.updateIssue = async archive => {
             key: newKey,
             description,
             url: issueLocation,
-            isPurchased
+            paid
           };
           await updateIssue(body);
           return [
@@ -268,7 +268,7 @@ exports.updateIssue = async archive => {
             key: newKey,
             description,
             coverImage: coverImageLocation,
-            isPurchased
+            paid
           };
           await updateIssue(body);
           return [
@@ -288,7 +288,7 @@ exports.updateIssue = async archive => {
           issueId,
           url,
           description,
-          isPurchased
+          paid
         };
         await updateIssue(body);
         return [

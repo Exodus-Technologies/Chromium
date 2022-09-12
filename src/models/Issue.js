@@ -19,7 +19,7 @@ const issueSchema = new Schema(
     description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     key: { type: String, required: true },
-    isPurchased: { type: Boolean, default: false },
+    paid: { type: Boolean, default: false },
     price: { type: Number, default: 0 },
     coverImage: { type: String },
     categories: { type: [String], required: true }
