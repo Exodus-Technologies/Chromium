@@ -177,6 +177,7 @@ exports.updateIssue = async archive => {
     const {
       title,
       description,
+      issueId,
       issuePath,
       issueType,
       coverImagePath,
