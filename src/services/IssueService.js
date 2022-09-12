@@ -115,8 +115,7 @@ exports.createIssue = async archive => {
       issuePath,
       issueType,
       coverImagePath,
-      coverImageType,
-      avaiableForSale
+      coverImageType
     } = archive;
     if (!issuePath) {
       return badRequest('File must be provided to upload.');
@@ -156,7 +155,6 @@ exports.createIssue = async archive => {
         const body = {
           title,
           key,
-          avaiableForSale,
           url: issueLocation,
           description,
           coverImage: coverImageLocation
@@ -183,12 +181,15 @@ exports.updateIssue = async archive => {
       issueType,
       coverImagePath,
       coverImageType,
-      avaiableForSale
+      isPurchased
     } = archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
       );
+    }
+    if (isPurchased && typeof isPurchased !== 'boolean') {
+      return badRequest('Purchased flag must be provided and a boolean flag.');
     }
     const issue = await getIssueById(issueId);
     if (issue) {
@@ -201,8 +202,8 @@ exports.updateIssue = async archive => {
           issueId,
           key: newKey,
           description,
-          avaiableForSale,
-          url: s3Location
+          url: s3Location,
+          isPurchased
         };
         await updateIssue(body);
         deleteIssueByKey(issue.key);
@@ -232,8 +233,8 @@ exports.updateIssue = async archive => {
             issueId,
             key: newKey,
             description,
-            avaiableForSale,
-            url: issueLocation
+            url: issueLocation,
+            isPurchased
           };
           await updateIssue(body);
           return [
@@ -266,8 +267,8 @@ exports.updateIssue = async archive => {
             issueId,
             key: newKey,
             description,
-            avaiableForSale,
-            coverImage: coverImageLocation
+            coverImage: coverImageLocation,
+            isPurchased
           };
           await updateIssue(body);
           return [
@@ -287,7 +288,7 @@ exports.updateIssue = async archive => {
           issueId,
           url,
           description,
-          avaiableForSale
+          isPurchased
         };
         await updateIssue(body);
         return [
