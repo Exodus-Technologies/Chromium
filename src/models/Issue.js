@@ -21,8 +21,7 @@ const issueSchema = new Schema(
     key: { type: String, required: true },
     paid: { type: Boolean, default: false },
     price: { type: Number, default: 0 },
-    coverImage: { type: String },
-    categories: { type: [String], required: true }
+    coverImage: { type: String }
   },
   { timestamps: true }
 );
