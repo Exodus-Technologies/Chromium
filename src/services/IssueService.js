@@ -48,15 +48,24 @@ exports.getPayloadFromRequest = async req => {
       if (isEmpty(fields)) reject('Form is empty.');
       const file = { ...fields, key: removeSpaces(fields.title) };
       if (!isEmpty(files)) {
-        const { filepath: issuePath, mimetype: issueType } = files['file'];
-        const { filepath: coverImagePath, mimetype: coverImageType } =
-          files['coverImage'];
+        const {
+          filepath: issuePath,
+          mimetype: issueType,
+          size: issueSize
+        } = files['file'];
+        const {
+          filepath: coverImagePath,
+          mimetype: coverImageType,
+          size: coverImageSize
+        } = files['coverImage'];
         resolve({
           ...file,
           issuePath,
           issueType,
           coverImagePath,
-          coverImageType
+          coverImageType,
+          issueSize,
+          coverImageSize
         });
       } else {
         resolve(file);
@@ -115,19 +124,27 @@ exports.createIssue = async archive => {
       issuePath,
       issueType,
       coverImagePath,
-      coverImageType
+      coverImageType,
+      issueSize,
+      coverImageSize
     } = archive;
     if (!issuePath) {
-      return badRequest('File must be provided to upload.');
+      return badRequest('Issue must be provided to upload.');
     }
     if (issuePath && issueType !== ISSUE_MIME_TYPE) {
-      return badRequest('File must be a file with a pdf extention.');
+      return badRequest('Issue must be a file with a pdf extention.');
+    }
+    if (issuePath && issueSize <= 0) {
+      return badRequest('Issue must be a file with actual data in it.');
     }
     if (!coverImagePath) {
       return badRequest('Cover image must be provided to upload.');
     }
     if (coverImagePath && coverImageType !== COVERIMAGE_MIME_TYPE) {
       return badRequest('File must be a file with a image extension.');
+    }
+    if (coverImagePath && coverImageSize <= 0) {
+      return badRequest('Cover image must be a file with actual data in it.');
     }
     if (!title) {
       return badRequest('Must have file title associated with file upload.');
@@ -182,7 +199,9 @@ exports.updateIssue = async archive => {
       issueType,
       coverImagePath,
       coverImageType,
-      paid
+      paid,
+      issueSize,
+      coverImageSize
     } = archive;
     if (description && description.length > 255) {
       return badRequest(
@@ -218,7 +237,7 @@ exports.updateIssue = async archive => {
           }
         ];
       }
-      if (issuePath) {
+      if (issuePath && issueSize > 0) {
         if (issueType !== ISSUE_MIME_TYPE) {
           return badRequest('File must be a file with a pdf extention.');
         }
@@ -249,7 +268,7 @@ exports.updateIssue = async archive => {
           ];
         }
       }
-      if (coverImagePath) {
+      if (coverImagePath && coverImageSize > 0) {
         if (coverImageType !== COVERIMAGE_MIME_TYPE) {
           return badRequest('File must be a file with a jpeg extention.');
         }

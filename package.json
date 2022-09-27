@@ -1,6 +1,6 @@
 {
   "name": "chromium",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "Microservice for all interactions for creating, retrieving, updating, and deleting pdf issues for customers of Sheen magazine (Issue Manager)",
   "main": "index.js",
   "scripts": {

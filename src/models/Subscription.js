@@ -13,7 +13,6 @@ const subscriptionSchema = new Schema({
   endDate: { type: String },
   type: { type: String },
   purchaseDate: { type: String },
-  amount: { type: Number, default: 15 },
   userId: { type: Number, required: true },
   subscriptionId: { type: String }
 });
