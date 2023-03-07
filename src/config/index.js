@@ -16,7 +16,7 @@ const config = {
       s3CoverImageBucketName: process.env.S3_COVERIMAGE_BUCKET_NAME
     },
     database: {
-      clusterName: process.env.CLUSTER_NAME,
+      clusterDomain: process.env.CLUSTER_DOMAIN,
       dbName: process.env.DB_NAME,
       dbUser: process.env.DB_USER,
       dbPass: process.env.DB_PASS,

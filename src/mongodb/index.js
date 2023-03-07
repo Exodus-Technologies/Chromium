@@ -5,10 +5,10 @@ import models from '../models';
 import { DEFAULT_SUBSCRIPTION_TYPE } from '../constants';
 import { createMoment } from '../utilities';
 
-const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
+const { dbUser, dbPass, clusterDomain, dbName } = config.sources.database;
 
 export const generateDBUri = () => {
-  return `mongodb+srv://${dbUser}:${dbPass}@${clusterName}.ybdno.mongodb.net/${dbName}?retryWrites=true&w=majority`;
+  return `mongodb+srv://${dbUser}:${dbPass}@${clusterDomain}/${dbName}?retryWrites=true&w=majority`;
 };
 
 const queryOps = { __v: 0, _id: 0 };
