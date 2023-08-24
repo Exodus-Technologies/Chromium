@@ -1,7 +1,5 @@
 'use strict';
 
-import { v4 as uuidv4 } from 'uuid';
-
 export const fancyTimeFormat = duration => {
   // Hours, minutes and seconds
   const hrs = ~~(duration / 3600);
@@ -18,8 +16,4 @@ export const fancyTimeFormat = duration => {
   ret += '' + mins + ':' + (secs < 10 ? '0' : '');
   ret += '' + secs;
   return ret;
-};
-
-export const createIssueId = () => {
-  return `issue-${uuidv4()}`;
 };

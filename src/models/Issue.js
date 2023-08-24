@@ -3,7 +3,6 @@
 import mongoose from 'mongoose';
 import mongooseSequence from 'mongoose-sequence';
 import config from '../config';
-import { createIssueId } from '../utilities';
 
 const { Schema } = mongoose;
 const autoIncrement = mongooseSequence(mongoose);
@@ -13,14 +12,13 @@ const { NODE_ENV } = config;
 //  ============================================
 const issueSchema = new Schema(
   {
-    subId: { type: String, default: createIssueId() },
     title: { type: String, required: true },
     url: { type: String, required: true },
     description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     key: { type: String, required: true },
-    paid: { type: Boolean, default: false },
-    price: { type: Number, default: 0 },
+    paid: { type: Boolean, default: true },
+    price: { type: Number, default: 5.99 },
     coverImage: { type: String }
   },
   { timestamps: true }

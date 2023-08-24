@@ -182,12 +182,12 @@ export const copyS3Object = (oldKey, newKey) => {
   });
 };
 
-export const getObjectUrlFromS3 = (fileName, isIssue = true) => {
-  const bucketName = isIssue ? s3IssueBucketName : s3CoverImageBucketName;
-  const extension = isIssue
-    ? DEFAULT_PDF_FILE_EXTENTION
-    : DEFAULT_COVERIMAGE_FILE_EXTENTION;
-  return `https://${bucketName}.s3.amazonaws.com/${fileName}.${extension}`;
+export const getCoverImageUrlFromS3 = fileName => {
+  return `https://${s3CoverImageBucketName}.s3.amazonaws.com/${fileName}.${DEFAULT_COVERIMAGE_FILE_EXTENTION}`;
+};
+
+export const getIssueUrlFromS3 = fileName => {
+  return `https://${s3IssueBucketName}.s3.amazonaws.com/${fileName}.${DEFAULT_PDF_FILE_EXTENTION}`;
 };
 
 export const deleteIssueByKey = key => {
@@ -242,8 +242,7 @@ const uploadIssueToS3 = (fileContent, key) => {
     const params = {
       Bucket: s3IssueBucketName,
       Key: `${key}.${DEFAULT_PDF_FILE_EXTENTION}`, // File name you want to save as in S3
-      Body: fileContent,
-      ACL: 'public-read'
+      Body: fileContent
     };
     try {
       const data = await s3Client.send(new PutObjectCommand(params));
@@ -264,8 +263,7 @@ const uploadCoverImageToS3 = (fileContent, key) => {
     const params = {
       Bucket: s3CoverImageBucketName,
       Key: `${key}.${DEFAULT_COVERIMAGE_FILE_EXTENTION}`, // File name you want to save as in S3
-      Body: fileContent,
-      ACL: 'public-read'
+      Body: fileContent
     };
     try {
       const data = await s3Client.send(new PutObjectCommand(params));
@@ -291,8 +289,8 @@ export const uploadArchiveToS3Location = async archive => {
       );
       await uploadIssueToS3(issueFile, key);
       await uploadCoverImageToS3(coverImageFile, key);
-      const issueLocation = getObjectUrlFromS3(key);
-      const coverImageLocation = getObjectUrlFromS3(key, false);
+      const issueLocation = getIssueUrlFromS3(key);
+      const coverImageLocation = getCoverImageUrlFromS3(key);
       resolve({ issueLocation, coverImageLocation });
     } catch (err) {
       console.log(`Error uploading archive to s3 bucket:`, err);

@@ -6,12 +6,12 @@ import {
   doesS3ObjectExist,
   deleteIssueByKey,
   copyS3Object,
-  getObjectUrlFromS3,
   doesIssueS3BucketExist,
   createCoverImageS3Bucket,
   createIssueS3Bucket,
   doesCoverImageS3BucketExist,
-  deleteCoverImageByKey
+  deleteCoverImageByKey,
+  getIssueUrlFromS3
 } from '../aws';
 import {
   COVERIMAGE_MIME_TYPE,
@@ -203,6 +203,18 @@ exports.updateIssue = async archive => {
       issueSize,
       coverImageSize
     } = archive;
+    if (issuePath && issueType !== ISSUE_MIME_TYPE) {
+      return badRequest('Issue must be a file with a pdf extention.');
+    }
+    if (issuePath && issueSize <= 0) {
+      return badRequest('Issue must be a file with actual data in it.');
+    }
+    if (coverImagePath && coverImageType !== COVERIMAGE_MIME_TYPE) {
+      return badRequest('File must be a file with a image extension.');
+    }
+    if (coverImagePath && coverImageSize <= 0) {
+      return badRequest('Cover image must be a file with actual data in it.');
+    }
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -216,7 +228,7 @@ exports.updateIssue = async archive => {
       const newKey = removeSpaces(title);
       if (newKey !== issue.key) {
         await copyS3Object(issue.key, newKey);
-        const s3Location = getObjectUrlFromS3(newKey);
+        const s3Location = getIssueUrlFromS3(newKey);
         const body = {
           title,
           issueId,
@@ -302,7 +314,7 @@ exports.updateIssue = async archive => {
           ];
         }
       } else {
-        const url = await getObjectUrlFromS3(newKey);
+        const url = await getIssueUrlFromS3(newKey);
         const body = {
           title,
           issueId,
