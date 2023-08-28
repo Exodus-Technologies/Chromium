@@ -8,10 +8,13 @@ const { Schema } = mongoose;
 const autoIncrement = mongooseSequence(mongoose);
 const { NODE_ENV } = config;
 
+import { createIssueId } from '../utilities';
+
 //ISSUE SCHEMA
 //  ============================================
 const issueSchema = new Schema(
   {
+    subId: { type: String, default: createIssueId() },
     title: { type: String, required: true },
     url: { type: String, required: true },
     description: { type: String, required: true },
