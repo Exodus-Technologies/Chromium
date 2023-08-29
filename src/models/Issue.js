@@ -19,6 +19,7 @@ const issueSchema = new Schema(
     url: { type: String, required: true },
     description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
+    issueOrder: { type: Number },
     key: { type: String, required: true },
     paid: { type: Boolean, default: true },
     price: { type: Number, default: 5.99 },

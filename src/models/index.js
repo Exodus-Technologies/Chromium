@@ -15,7 +15,7 @@ const basename = path.basename(__filename);
 const models = {};
 
 /**
- * Set event listener to mongoose.connection
+ * Set event listeners to mongoose.connection
  */
 mongoose.connection.on('error', error => {
   console.log(error);
@@ -24,6 +24,13 @@ mongoose.connection.on('error', error => {
 mongoose.connection.on('open', () => {
   console.log(`Connected to ${clusterDomain}...`);
 });
+
+/**
+ * This warning message is indicating that the Mongoose library is currently using the "strictQuery" option and that this option will be switched back to "false" in Mongoose 7 by default.
+ * Mongoose uses this option to determine whether to enforce strict query syntax. When set to "false", Mongoose will allow query conditions to match multiple properties.
+ * To resolve this warning, you can either set "strictQuery" to "false" in your code by using the following line:
+ */
+mongoose.set('strictQuery', false);
 
 /**
  * Assign models to 'models' object
