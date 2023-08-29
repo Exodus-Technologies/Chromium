@@ -2,8 +2,6 @@
 
 import config from '../config';
 import models from '../models';
-import { DEFAULT_SUBSCRIPTION_TYPE } from '../constants';
-import { createMoment } from '../utilities';
 
 const { dbUser, dbPass, clusterDomain, dbName } = config.sources.database;
 
@@ -15,18 +13,10 @@ const queryOps = { __v: 0, _id: 0 };
 
 export const getIssues = async query => {
   try {
-    const { Issue, Subscription } = models;
+    const { Issue } = models;
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
-    const userId = parseInt(query.userId);
     const skipIndex = (page - 1) * limit;
-    const subscriptions = userId
-      ? await Subscription.find({ userId, type: DEFAULT_SUBSCRIPTION_TYPE })
-          .sort({
-            endDate: 'desc'
-          })
-          .limit(1)
-      : null;
 
     const filter = [];
     for (const [key, value] of Object.entries(query)) {
@@ -42,29 +32,18 @@ export const getIssues = async query => {
       };
     }
 
-    let sortString = '-id';
-
-    if (query.sort) {
-      sortString = query.sort;
-    }
-
     const issues = await Issue.find(objectFilter, queryOps)
       .limit(limit)
       .skip(skipIndex)
-      .sort(sortString)
+      .sort({ issueOrder: 'asc' })
       .lean()
       .exec();
+
     const total = await Issue.find(objectFilter, queryOps).count();
     return issues.map(issue => ({
       ...issue,
       total,
-      pages: Math.ceil(total / limit),
-      paid:
-        subscriptions && subscriptions.length
-          ? createMoment(issue.createdAt).isBefore(
-              createMoment(subscriptions[0].endDate)
-            )
-          : false
+      pages: Math.ceil(total / limit)
     }));
   } catch (err) {
     console.log('Error getting issue data from db: ', err);

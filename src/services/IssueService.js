@@ -14,8 +14,8 @@ import {
   getIssueUrlFromS3
 } from '../aws';
 import {
-  COVERIMAGE_MIME_TYPE,
-  ISSUE_MIME_TYPE,
+  COVERIMAGE_MIME_TYPES,
+  ISSUE_MIME_TYPES,
   MAX_FILE_SIZE
 } from '../constants';
 import {
@@ -126,13 +126,14 @@ exports.createIssue = async archive => {
       coverImagePath,
       coverImageType,
       issueSize,
-      coverImageSize
+      coverImageSize,
+      issueOrder
     } = archive;
     if (!issuePath) {
       return badRequest('Issue must be provided to upload.');
     }
-    if (issuePath && issueType !== ISSUE_MIME_TYPE) {
-      return badRequest('Issue must be a file with a pdf extention.');
+    if (issuePath && !ISSUE_MIME_TYPES.includes(issueType)) {
+      return badRequest('Issue must be a binary file.');
     }
     if (issuePath && issueSize <= 0) {
       return badRequest('Issue must be a file with actual data in it.');
@@ -140,7 +141,7 @@ exports.createIssue = async archive => {
     if (!coverImagePath) {
       return badRequest('Cover image must be provided to upload.');
     }
-    if (coverImagePath && coverImageType !== COVERIMAGE_MIME_TYPE) {
+    if (coverImagePath && !COVERIMAGE_MIME_TYPES.includes(coverImageType)) {
       return badRequest('File must be a file with a image extension.');
     }
     if (coverImagePath && coverImageSize <= 0) {
@@ -174,7 +175,8 @@ exports.createIssue = async archive => {
           key,
           url: issueLocation,
           description,
-          coverImage: coverImageLocation
+          coverImage: coverImageLocation,
+          issueOrder
         };
         await createIssue(body);
         return [
@@ -201,20 +203,9 @@ exports.updateIssue = async archive => {
       coverImageType,
       paid,
       issueSize,
-      coverImageSize
+      coverImageSize,
+      issueOrder
     } = archive;
-    if (issuePath && issueType !== ISSUE_MIME_TYPE) {
-      return badRequest('Issue must be a file with a pdf extention.');
-    }
-    if (issuePath && issueSize <= 0) {
-      return badRequest('Issue must be a file with actual data in it.');
-    }
-    if (coverImagePath && coverImageType !== COVERIMAGE_MIME_TYPE) {
-      return badRequest('File must be a file with a image extension.');
-    }
-    if (coverImagePath && coverImageSize <= 0) {
-      return badRequest('Cover image must be a file with actual data in it.');
-    }
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -235,7 +226,8 @@ exports.updateIssue = async archive => {
           key: newKey,
           description,
           url: s3Location,
-          paid
+          paid,
+          issueOrder
         };
         await updateIssue(body);
         deleteIssueByKey(issue.key);
@@ -250,7 +242,7 @@ exports.updateIssue = async archive => {
         ];
       }
       if (issuePath && issueSize > 0) {
-        if (issueType !== ISSUE_MIME_TYPE) {
+        if (!ISSUE_MIME_TYPES.includes(issueType)) {
           return badRequest('File must be a file with a pdf extention.');
         }
         const isIssueBucketAvaiable = await doesIssueS3BucketExist();
@@ -266,7 +258,8 @@ exports.updateIssue = async archive => {
             key: newKey,
             description,
             url: issueLocation,
-            paid
+            paid,
+            issueOrder
           };
           await updateIssue(body);
           return [
@@ -281,8 +274,8 @@ exports.updateIssue = async archive => {
         }
       }
       if (coverImagePath && coverImageSize > 0) {
-        if (coverImageType !== COVERIMAGE_MIME_TYPE) {
-          return badRequest('File must be a file with a jpeg extention.');
+        if (!COVERIMAGE_MIME_TYPES.includes(coverImageType)) {
+          return badRequest('File must be a file with a image extention.');
         }
         const isCoverImageBucketAvaiable = await doesCoverImageS3BucketExist();
         if (isCoverImageBucketAvaiable) {
@@ -300,7 +293,8 @@ exports.updateIssue = async archive => {
             key: newKey,
             description,
             coverImage: coverImageLocation,
-            paid
+            paid,
+            issueOrder
           };
           await updateIssue(body);
           return [
@@ -320,7 +314,8 @@ exports.updateIssue = async archive => {
           issueId,
           url,
           description,
-          paid
+          paid,
+          issueOrder
         };
         await updateIssue(body);
         return [
@@ -366,8 +361,8 @@ exports.deleteIssueById = async issueId => {
     const issue = await getIssueById(issueId);
     if (issue) {
       const { key } = issue;
-      await deleteIssueByKey(key);
-      await deleteCoverImageByKey(key);
+      deleteIssueByKey(key);
+      deleteCoverImageByKey(key);
       const deletedIssue = await deleteIssueById(issueId);
       if (deletedIssue) {
         return [204];
