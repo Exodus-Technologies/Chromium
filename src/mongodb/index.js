@@ -123,3 +123,14 @@ export const deleteIssueById = async issueId => {
     console.log('Error deleting issue data from db: ', err);
   }
 };
+
+export const getNextIssueOrder = async () => {
+  try {
+    const { Issue } = models;
+    const issue = await Issue.find({}).sort({ issueOrder: -1 }).limit(1);
+    return (issue[0].issueOrder += 1);
+  } catch (err) {
+    console.log('Error computing max issue order data from db: ', err);
+    return null;
+  }
+};

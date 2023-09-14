@@ -23,6 +23,11 @@ router.get(
 router.get('/issue-service/getTotal', IssueController.getTotal);
 
 router.get(
+  '/issue-service/getNextIssueOrder',
+  IssueController.getNextIssueOrder
+);
+
+router.get(
   '/issue-service/getIssue/:issueId',
   issueIdParamValidation,
   validationHandler,

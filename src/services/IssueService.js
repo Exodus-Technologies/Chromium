@@ -26,7 +26,8 @@ import {
   getIssueByTitle,
   updateIssue,
   getIssues,
-  getTotal
+  getTotal,
+  getNextIssueOrder
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
@@ -391,5 +392,26 @@ exports.getTotal = async query => {
   } catch (err) {
     console.log('Error getting all issues: ', err);
     return badImplementationRequest('Error getting issues.');
+  }
+};
+
+exports.getNextIssueOrder = async () => {
+  try {
+    const nextIssueOrder = await getNextIssueOrder();
+    if (nextIssueOrder) {
+      return [
+        200,
+        {
+          message: 'Successful fetch of next issue order number.',
+          nextIssueOrder
+        }
+      ];
+    }
+    return badRequest(`Unable to compute next largest issue order number.`);
+  } catch (err) {
+    console.log('Error computing next largest issue order number: ', err);
+    return badImplementationRequest(
+      'Error computing next largest issue order number.'
+    );
   }
 };
