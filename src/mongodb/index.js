@@ -35,7 +35,7 @@ export const getIssues = async query => {
     const issues = await Issue.find(objectFilter, queryOps)
       .limit(limit)
       .skip(skipIndex)
-      .sort({ issueOrder: 'asc' })
+      .sort({ issueOrder: 'desc' })
       .lean()
       .exec();
 
