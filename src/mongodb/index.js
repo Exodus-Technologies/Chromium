@@ -35,7 +35,7 @@ export const getIssues = async query => {
     const issues = await Issue.find(objectFilter, queryOps)
       .limit(limit)
       .skip(skipIndex)
-      .sort({ issueOrder: 'asc' })
+      .sort({ issueOrder: 'desc' })
       .lean()
       .exec();
 
@@ -121,5 +121,16 @@ export const deleteIssueById = async issueId => {
     return deletedIssue;
   } catch (err) {
     console.log('Error deleting issue data from db: ', err);
+  }
+};
+
+export const getNextIssueOrder = async () => {
+  try {
+    const { Issue } = models;
+    const issue = await Issue.find({}).sort({ issueOrder: -1 }).limit(1);
+    return (issue[0].issueOrder += 1);
+  } catch (err) {
+    console.log('Error computing max issue order data from db: ', err);
+    return null;
   }
 };

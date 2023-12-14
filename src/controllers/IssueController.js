@@ -78,3 +78,13 @@ exports.getTotal = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getNextIssueOrder = async (req, res, next) => {
+  try {
+    const [statusCode, response] = await IssueService.getNextIssueOrder();
+    res.status(statusCode).send(response);
+  } catch (err) {
+    console.log(`Error with getting largest issue number: `, err);
+    next(err);
+  }
+};

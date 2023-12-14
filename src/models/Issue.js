@@ -34,12 +34,12 @@ const issueSchema = new Schema(
 issueSchema.set('autoCreate', NODE_ENV !== 'production');
 
 /**
- * Increments videoId everytime an instances is created
+ * Increments issueId everytime an instances is created
  */
 issueSchema.plugin(autoIncrement, { inc_field: 'issueId' });
 
 /**
- * Create Issue model out of issueSchema
+ * Create model of Issue to access
  */
 const Issue = mongoose.model('Issue', issueSchema);
 

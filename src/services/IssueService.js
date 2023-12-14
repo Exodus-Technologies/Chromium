@@ -26,7 +26,8 @@ import {
   getIssueByTitle,
   updateIssue,
   getIssues,
-  getTotal
+  getTotal,
+  getNextIssueOrder
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
@@ -126,8 +127,7 @@ exports.createIssue = async archive => {
       coverImagePath,
       coverImageType,
       issueSize,
-      coverImageSize,
-      issueOrder
+      coverImageSize
     } = archive;
     if (!issuePath) {
       return badRequest('Issue must be provided to upload.');
@@ -150,10 +150,8 @@ exports.createIssue = async archive => {
     if (!title) {
       return badRequest('Must have file title associated with file upload.');
     }
-    if (!description || (description && description.length > 255)) {
-      return badRequest(
-        'Description must be provided and less than 255 characters long.'
-      );
+    if (!description) {
+      return badRequest('Description must be provided.');
     }
     const issue = await getIssueByTitle(title);
     if (issue) {
@@ -169,6 +167,8 @@ exports.createIssue = async archive => {
       } else {
         const { issueLocation, coverImageLocation } =
           await uploadArchiveToS3Location(archive);
+
+        const issueOrder = await getNextIssueOrder();
 
         const body = {
           title,
@@ -214,7 +214,15 @@ exports.updateIssue = async archive => {
     if (paid && typeof paid !== 'boolean') {
       return badRequest('Purchased flag must be provided and a boolean flag.');
     }
+
     const issue = await getIssueById(issueId);
+
+    if (issue.issueOrder === issueOrder) {
+      return badRequest(
+        'Issue Order number provided already in use. Please provide another issue order number'
+      );
+    }
+
     if (issue) {
       const newKey = removeSpaces(title);
       if (newKey !== issue.key) {
@@ -391,5 +399,26 @@ exports.getTotal = async query => {
   } catch (err) {
     console.log('Error getting all issues: ', err);
     return badImplementationRequest('Error getting issues.');
+  }
+};
+
+exports.getNextIssueOrder = async () => {
+  try {
+    const nextIssueOrder = await getNextIssueOrder();
+    if (nextIssueOrder) {
+      return [
+        200,
+        {
+          message: 'Successful fetch of next issue order number.',
+          nextIssueOrder
+        }
+      ];
+    }
+    return badRequest(`Unable to compute next largest issue order number.`);
+  } catch (err) {
+    console.log('Error computing next largest issue order number: ', err);
+    return badImplementationRequest(
+      'Error computing next largest issue order number.'
+    );
   }
 };
